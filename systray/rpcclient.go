@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 
-	rpc "github.com/Shieldoo/shieldoo-mesh/rpc"
+	rpc "github.com/shieldoo/shieldoo-mesh/rpc"
 )
 
 type CloseWriter interface {

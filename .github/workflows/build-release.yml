@@ -123,7 +123,7 @@ jobs:
 
   build-linux:
     name: Build Linux
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
 
     steps:
     - name: Checkout
@@ -172,6 +172,21 @@ jobs:
         cp ./install/linux/linux-amd64-install-svc.sh ./out/asset/linux-amd64/
         cp ./install/linux/linux-arm7-install-svc.sh ./out/asset/linux-arm7/
 
+    - name: Tar linux amd64
+      run: |
+        cd ./out/asset/linux-amd64
+        chmod 755 shieldoo-mesh-srv
+        chmod 755 shieldoo-mesh-app
+        tar -czvpf shieldoo-mesh-setup.tar.gz shieldoo-mesh-srv shieldoo-mesh-app logo.png
+        tar -czvpf shieldoo-mesh-svc-setup.tar.gz shieldoo-mesh-srv
+        cd ../../..
+    - name: Tar linux arm7
+      run: |
+        cd ./out/asset/linux-arm7
+        chmod 755 shieldoo-mesh-srv
+        tar -czvpf shieldoo-mesh-svc-setup.tar.gz shieldoo-mesh-srv
+        cd ../../..
+
     - name: Upload artifacts linux
       uses: actions/upload-artifact@v2
       with:
@@ -186,17 +201,17 @@ jobs:
 
     # build in docker
     - name: docker login
-      uses: docker/login-action@v1
+      uses: docker/login-action@v2
       with:
         registry: ghcr.io
-        username: ${{ github.repository_owner }}
-        password: ${{ secrets.PAT }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
     - name: Build and push to container registry
-      uses: docker/build-push-action@v2
+      uses: docker/build-push-action@v3
       with:
         context: .
         push: true
-        tags: ghcr.io/${{ github.repository_owner }}/shieldoo-mesh-srv:latest,ghcr.io/${{ github.repository_owner }}/shieldoo-mesh-srv:${{ env.MYTAG }}
+        tags: ghcr.io/${{ github.repository }}:latest,ghcr.io/${{ github.repository }}:${{ env.MYTAG }}
 
   build-windows:
     name: Build Windows
@@ -290,55 +305,23 @@ jobs:
     needs: [build-linux, build-windows, sign-darwin]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
       - uses: azure/login@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
       - name: Download artifacts
         uses: actions/download-artifact@v2
-      - name: Prepare version
-        env:
-          ACTIONS_ALLOW_UNSECURE_COMMANDS: true
-        run: |
-          export MYTAG=${GITHUB_REF#refs/tags/v}
-          echo "MYTAG: $MYTAG"
-          echo "::set-env name=MYTAG::$MYTAG"
-      - name: Tar linux
-        run: |
-          cd linux-amd64
-          chmod 755 shieldoo-mesh-srv
-          chmod 755 shieldoo-mesh-app
-          tar -czvpf shieldoo-mesh-setup.tar.gz shieldoo-mesh-srv shieldoo-mesh-app logo.png
-          tar -czvpf shieldoo-mesh-svc-setup.tar.gz shieldoo-mesh-srv
-      - name: Tar linux arm7
-        run: |
-          cd linux-arm7
-          chmod 755 shieldoo-mesh-srv
-          tar -czvpf shieldoo-mesh-svc-setup.tar.gz shieldoo-mesh-srv
-
-      - name: Upload artifacts linux amd64 tar
-        uses: actions/upload-artifact@v2
-        with:
-          name: linux-arm7
-          path: linux-amd64/shieldoo-mesh-svc-setup.tar.gz
-
-      - name: Upload artifacts linux arm7 tar
-        uses: actions/upload-artifact@v2
-        with:
-          name: linux-arm7
-          path: linux-amd64/shieldoo-mesh-svc-setup.tar.gz
 
       - name: Create changelog text
         id: changelog
         uses: loopwerk/tag-changelog@v1
         with:
-          token: ${{ secrets.PAT }}
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.PAT }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ github.ref }}
           release_name: Release ${{ github.ref }}
@@ -348,18 +331,18 @@ jobs:
           prerelease: false
 
       - name: Upload windows-amd64 shieldoo-mesh-setup.exe
-        uses: actions/upload-release-asset@v1.0.1
+        uses: actions/upload-release-asset@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.PAT }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./windows-amd64/shieldoo-mesh-setup.exe
           asset_name: windows-amd64-shieldoo-mesh-setup.exe
           asset_content_type: application/octet-stream
       - name: Upload windows-amd64 shieldoo-mesh-svc-setup.exe
-        uses: actions/upload-release-asset@v1.0.1
+        uses: actions/upload-release-asset@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.PAT }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./windows-amd64/shieldoo-mesh-svc-setup.exe
@@ -367,36 +350,36 @@ jobs:
           asset_content_type: application/octet-stream
 
       - name: Upload linux-amd64 shieldoo-mesh-setup.tar.gz
-        uses: actions/upload-release-asset@v1.0.1
+        uses: actions/upload-release-asset@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.PAT }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./linux-amd64/shieldoo-mesh-setup.tar.gz
           asset_name: linux-amd64-shieldoo-mesh-setup.tar.gz
           asset_content_type: application/gzip
       - name: Upload linux-amd64 shieldoo-mesh-svc-setup.tar.gz
-        uses: actions/upload-release-asset@v1.0.1
+        uses: actions/upload-release-asset@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.PAT }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./linux-amd64/shieldoo-mesh-svc-setup.tar.gz
           asset_name: linux-amd64-shieldoo-mesh-svc-setup.tar.gz
           asset_content_type: application/gzip
       - name: Upload linux-amd64 linux-amd64-install-svc.sh
-        uses: actions/upload-release-asset@v1.0.1
+        uses: actions/upload-release-asset@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.PAT }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./linux-amd64/linux-amd64-install-svc.sh
           asset_name: linux-amd64-install-svc.sh
           asset_content_type: text/plain
       - name: Upload linux-amd64 linux-amd64-install.sh
-        uses: actions/upload-release-asset@v1.0.1
+        uses: actions/upload-release-asset@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.PAT }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./linux-amd64/linux-amd64-install.sh
@@ -404,18 +387,18 @@ jobs:
           asset_content_type: text/plain
 
       - name: Upload linux-arm7 shieldoo-mesh-svc-setup.tar.gz
-        uses: actions/upload-release-asset@v1.0.1
+        uses: actions/upload-release-asset@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.PAT }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./linux-arm7/shieldoo-mesh-svc-setup.tar.gz
           asset_name: linux-arm7-shieldoo-mesh-svc-setup.tar.gz
           asset_content_type: application/gzip
       - name: Upload linux-arm7 linux-arm7-install-svc.sh
-        uses: actions/upload-release-asset@v1.0.1
+        uses: actions/upload-release-asset@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.PAT }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./linux-arm7/linux-arm7-install-svc.sh
@@ -423,9 +406,9 @@ jobs:
           asset_content_type: text/plain
 
       - name: Upload darwin-x64 darwin-x64-shieldoo-mesh-setup.pkg
-        uses: actions/upload-release-asset@v1.0.1
+        uses: actions/upload-release-asset@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.PAT }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./darwin-x64/darwin-x64-shieldoo-mesh-setup.pkg
@@ -433,9 +416,9 @@ jobs:
           asset_content_type: application/octet-stream
 
       - name: Upload darwin-x64 darwin-x64-shieldoo-mesh-svc-setup.pkg
-        uses: actions/upload-release-asset@v1.0.1
+        uses: actions/upload-release-asset@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.PAT }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./darwin-x64/darwin-x64-shieldoo-mesh-svc-setup.pkg
@@ -448,7 +431,6 @@ jobs:
     runs-on: ubuntu-latest
     environment: publish
     steps:
-      - uses: actions/checkout@v2
       - uses: azure/login@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}

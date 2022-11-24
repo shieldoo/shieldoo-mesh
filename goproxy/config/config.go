@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Shieldoo/shieldoo-mesh/goproxy/core/scheduler"
+	"github.com/shieldoo/shieldoo-mesh/goproxy/core/scheduler"
 )
 
 // Configure

@@ -8,9 +8,9 @@ import (
 	"strings"
 	"time"
 
-	proxyconf "github.com/Shieldoo/shieldoo-mesh/goproxy/config"
-	proxy "github.com/Shieldoo/shieldoo-mesh/goproxy/core"
-	wstunnel "github.com/Shieldoo/shieldoo-mesh/wstunnel"
+	proxyconf "github.com/shieldoo/shieldoo-mesh/goproxy/config"
+	proxy "github.com/shieldoo/shieldoo-mesh/goproxy/core"
+	wstunnel "github.com/shieldoo/shieldoo-mesh/wstunnel"
 
 	"github.com/sirupsen/logrus"
 	"github.com/slackhq/nebula"

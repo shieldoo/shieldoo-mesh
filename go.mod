@@ -1,4 +1,4 @@
-module github.com/Shieldoo/shieldoo-mesh
+module github.com/shieldoo/shieldoo-mesh
 
 go 1.19
 

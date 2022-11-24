@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	rpc "github.com/Shieldoo/shieldoo-mesh/rpc"
+	rpc "github.com/shieldoo/shieldoo-mesh/rpc"
 )
 
 const (

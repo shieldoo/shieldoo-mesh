@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"os"
 
-	rpc "github.com/Shieldoo/shieldoo-mesh/rpc"
+	rpc "github.com/shieldoo/shieldoo-mesh/rpc"
 )
 
 func main() {

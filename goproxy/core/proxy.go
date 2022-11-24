@@ -3,10 +3,10 @@ package core
 import (
 	"log"
 
-	"github.com/Shieldoo/shieldoo-mesh/goproxy/config"
-	"github.com/Shieldoo/shieldoo-mesh/goproxy/core/server"
-	"github.com/Shieldoo/shieldoo-mesh/goproxy/core/tcp"
-	"github.com/Shieldoo/shieldoo-mesh/goproxy/core/udp"
+	"github.com/shieldoo/shieldoo-mesh/goproxy/config"
+	"github.com/shieldoo/shieldoo-mesh/goproxy/core/server"
+	"github.com/shieldoo/shieldoo-mesh/goproxy/core/tcp"
+	"github.com/shieldoo/shieldoo-mesh/goproxy/core/udp"
 )
 
 // Proxy Agent implementation

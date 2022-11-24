@@ -7,9 +7,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Shieldoo/shieldoo-mesh/goproxy/config"
-	"github.com/Shieldoo/shieldoo-mesh/goproxy/core/scheduler"
-	"github.com/Shieldoo/shieldoo-mesh/goproxy/core/server"
+	"github.com/shieldoo/shieldoo-mesh/goproxy/config"
+	"github.com/shieldoo/shieldoo-mesh/goproxy/core/scheduler"
+	"github.com/shieldoo/shieldoo-mesh/goproxy/core/server"
 )
 
 // UDP proxy
