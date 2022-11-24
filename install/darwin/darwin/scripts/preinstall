@@ -1,0 +1,45 @@
+#!/bin/bash
+
+loop="true"
+while [ $loop == "true" ]
+do
+    myuri=$(osascript -e 'set T to text returned of (display dialog "Please enter a URL to your Shieldoo Mesh" default answer "" with icon caution  buttons {"Cancel", "OK"} default button "OK")')
+    if [ $? -eq 0 ]; then
+        echo "input: $myuri"
+        pattern="http(s)?://[^/].....+"
+        if [[ $myuri =~ $pattern ]]; then
+            loop="false"
+        else
+            osascript -e 'display dialog "Please enter a valid URL to your Shieldoo Mesh!" with icon stop  buttons {"OK"} default button "OK"'
+        fi
+    else
+        exit 1
+    fi
+done
+
+# create config or edit
+CFGDIR="$HOME/Library/ShieldooMesh"
+mkdir -p "$CFGDIR"
+chown "$USER":"staff" "$CFGDIR"
+chmod 700 "$CFGDIR"
+CFGFILE="$CFGDIR/shieldoo-mesh.yaml"
+if [ -f "$CFGFILE" ]; then
+    cat "$CFGFILE" | grep -v 'uri: http' > "$CFGFILE.tmp"
+    cat "$CFGFILE.tmp" > "$CFGFILE"
+    echo "uri: $myuri" >> "$CFGFILE"
+    chown "$USER":"staff" "$CFGFILE"
+    chmod 600 "$CFGFILE"
+else
+    echo "uri: $myuri" > "$CFGFILE"
+    chown "$USER":"staff" "$CFGFILE"
+    chmod 600 "$CFGFILE"
+fi
+
+# stop service
+sudo launchctl unload /Library/LaunchDaemons/shieldoo-mesh.plist
+sudo rm /Library/LaunchDaemons/shieldoo-mesh.plist
+
+# killall client apps
+sudo killall shieldoo-mesh-app
+
+exit 0

@@ -1,0 +1,64 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - main
+jobs:
+  build:
+    name: Build docker image
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+
+    # build binaries
+    - name: Setup Go environment
+      uses: actions/setup-go@v2
+      with:
+        go-version: '1.19'
+        # Whether to download only stable versions
+        stable: true
+
+    - name: prepare app version
+      run: |
+        export MYTAG="DEV"
+        sed -i 's/#APPVERSION#/'$MYTAG'/g' version.go
+        sed -i 's/#APPVERSION#/'$MYTAG'/g' systray/version.go
+
+    - name: Install packages gcc
+      run: |
+        sudo apt-get -y update || echo 0
+        sudo apt-get -y install gcc libgtk-3-dev libappindicator3-dev || echo 0
+        sudo apt-get -y install --no-install-recommends -y nsis nsis-doc nsis-pluginapi || echo 0
+    - name: Build clientapp
+      run: |
+        env GOOS=linux GOARCH=amd64 go build -o ./out/asset/linux-amd64/shieldoo-mesh-app ./systray
+        cp ./install/linux/linux-amd64-install.sh ./out/asset/linux-amd64/
+        cp ./install/linux/logo.png ./out/asset/linux-amd64/
+    - name: Build clientsrv
+      run: |
+        env GOOS=linux GOARCH=amd64 go build -o ./out/asset/linux-amd64/shieldoo-mesh-srv 
+        # FIX for nebula 1.6.1 os.Exit in code
+        chmod +w /home/runner/go/pkg/mod/github.com/slackhq/nebula@v1.6.1/interface.go
+        cat ./install/patch/interface.go > /home/runner/go/pkg/mod/github.com/slackhq/nebula@v1.6.1/interface.go
+        env GOOS=linux GOARCH=amd64 go build -o ./out/asset/linux-amd64/shieldoo-mesh-srv 
+        env GOOS=linux GOARCH=arm GOARM=7  go build -o ./out/asset/linux-arm7/shieldoo-mesh-srv 
+        cp ./install/linux/linux-amd64-install-svc.sh ./out/asset/linux-amd64/
+        cp ./install/linux/linux-arm7-install-svc.sh ./out/asset/linux-arm7/
+
+    # build in docker
+    - name: docker login
+      uses: docker/login-action@v1
+      with:
+        registry: ghcr.io
+        username: ${{ github.repository_owner }}
+        password: ${{ secrets.PAT }}
+    - name: Build and push to container registry
+      uses: docker/build-push-action@v2
+      with:
+        context: .
+        push: true
+        tags: ghcr.io/${{ github.repository_owner }}/shieldoo-mesh-srv:dev

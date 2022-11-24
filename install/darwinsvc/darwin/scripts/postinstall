@@ -1,0 +1,37 @@
+#!/bin/bash
+
+# change access rights
+sudo chgrp -R staff /Applications/Shieldoo\ Mesh.app
+
+loop="true"
+while [ $loop == "true" ]
+do
+    mydata=$(osascript -e 'set T to text returned of (display dialog "Please enter a CONFIGURATION DATA to your Shieldoo Mesh" default answer "\r\r\r\r\r\r\r\r" with icon caution  buttons {"Cancel", "OK"} default button "OK")')
+    if [ $? -eq 0 ]; then
+        #echo "input: $mydata"
+        pattern=".................................+"
+        if [[ $mydata =~ $pattern ]]; then
+            tmpdata=$(echo "$mydata" | base64 -d)
+            if [ $? -eq 0 ]; then
+                mydata=$(echo "$tmpdata" | base64 -b 0)
+                sudo /Applications/Shieldoo\ Mesh.app/Contents/MacOS/shieldoo-mesh-srv -createconfig $mydata
+                if [ $? -eq 0 ]; then
+                    loop="false"
+                fi
+            fi
+        fi
+        if [ $loop == "true" ]; then
+            osascript -e 'display dialog "Please enter a valid CONFIGURATION DATA to your Shieldoo Mesh!" with icon stop  buttons {"OK"} default button "OK"'
+        fi
+    else
+        exit 1
+    fi
+done
+
+# register service
+sudo /Applications/Shieldoo\ Mesh.app/Contents/MacOS/shieldoo-mesh-srv -service install
+
+#start service
+sudo /Applications/Shieldoo\ Mesh.app/Contents/MacOS/shieldoo-mesh-srv -service start
+
+exit 0

@@ -1,0 +1,504 @@
+on:
+  push:
+    tags:
+    - 'v[0-9]+.[0-9]+.[0-9]*'
+    - 'v[0-9]+.[0-9]+.[0-9]*-*'
+
+name: Create release and upload binaries
+
+jobs:
+
+  build-darwin:
+    name: Build Darwin
+    runs-on: macos-11
+    steps:
+    - name: Set up Go 1.19
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.19
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Import certificates - APPLICATION
+      uses: Apple-Actions/import-codesign-certs@v1
+      with:
+        p12-file-base64: ${{ secrets.APPLE_DEVCERT_APPLICATION_P12_BASE64 }}
+        p12-password: ${{ secrets.APPLE_DEVCERT_APPLICATION_PASSWORD }}
+
+    # version
+    - name: Prepare version
+      env:
+        ACTIONS_ALLOW_UNSECURE_COMMANDS: true
+      run: |
+        export MYTAG=${GITHUB_REF#refs/tags/v}
+        echo "MYTAG: $MYTAG"
+        echo "::set-env name=MYTAG::$MYTAG"
+
+    - name: prepare app version
+      run: |
+        sed -i '' -e 's/#APPVERSION#/'$MYTAG'/g' version.go
+        sed -i '' -e 's/#APPVERSION#/'$MYTAG'/g' systray/version.go
+
+    - name: Build darwin
+      run: |
+        mkdir -p out
+        rm -rf out/*
+        CGO_ENABLED=1 GOOS=darwin GOARCH=arm64 SDKROOT=$(xcrun --sdk macosx --show-sdk-path)  go build -o out/shieldoo-mesh-app-arm64 ./systray
+        CGO_ENABLED=1 GOOS=darwin GOARCH=amd64 SDKROOT=$(xcrun --sdk macosx --show-sdk-path)  go build -o out/shieldoo-mesh-app-amd64 ./systray
+        lipo -create -output out/shieldoo-mesh-app out/shieldoo-mesh-app-amd64 out/shieldoo-mesh-app-arm64
+        rm out/shieldoo-mesh-app-amd64 out/shieldoo-mesh-app-arm64
+        env GOOS=darwin GOARCH=arm64 go build -o out/shieldoo-mesh-srv-arm64
+        # FIX for nebula 1.6.1 os.Exit in code
+        chmod +w /Users/runner/go/pkg/mod/github.com/slackhq/nebula@v1.6.1/interface.go
+        cat ./install/patch/interface.go > /Users/runner/go/pkg/mod/github.com/slackhq/nebula@v1.6.1/interface.go
+        env GOOS=darwin GOARCH=arm64 go build -o out/shieldoo-mesh-srv-arm64
+        env GOOS=darwin GOARCH=amd64 go build -o out/shieldoo-mesh-srv-amd64
+        lipo -create -output out/shieldoo-mesh-srv out/shieldoo-mesh-srv-amd64 out/shieldoo-mesh-srv-arm64
+        rm out/shieldoo-mesh-srv-amd64 out/shieldoo-mesh-srv-arm64
+
+    - name: Build and Sign App darwin
+      env:
+        APPLE_DEVCERT_APPLICATION_ID: ${{ secrets.APPLE_DEVCERT_APPLICATION_ID }}
+      run: |
+        cd install/darwin
+        TMPVER="{$MYTAG}-"
+        TMPVERSION=(${TMPVER//-/ }[0])
+        ./build-pkg.sh ShieldooMesh $TMPVERSION ../../out "$APPLE_DEVCERT_APPLICATION_ID"
+        cd ../darwinsvc
+        ./build-pkg.sh ShieldooMesh $TMPVERSION ../../out "$APPLE_DEVCERT_APPLICATION_ID"
+        cd ..
+        rm ../out/*
+        cp ./darwin/target/pkg/ShieldooMesh.pkg ../out/darwin-x64-shieldoo-mesh-setup-unsigned.pkg
+        cp ./darwinsvc/target/pkg/ShieldooMesh.pkg ../out/darwin-x64-shieldoo-mesh-svc-setup-unsigned.pkg
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: darwin-x64
+        path: ./out
+
+  sign-darwin:
+    name: Sign PKG Darwin
+    needs: [build-darwin]
+    runs-on: macos-11
+    steps:
+    - name: Download artifacts
+      uses: actions/download-artifact@v2
+    - name: Import certificates - INSTALL
+      uses: Apple-Actions/import-codesign-certs@v1
+      with:
+        p12-file-base64: ${{ secrets.APPLE_DEVCERT_INSTALL_P12_BASE64 }}
+        p12-password: ${{ secrets.APPLE_DEVCERT_INSTALL_PASSWORD }}
+
+    - name: Sign package darwin 
+      env:
+        APPLE_DEVCERT_INSTALL_ID: ${{ secrets.APPLE_DEVCERT_INSTALL_ID }}
+      run: |
+        mkdir -p ./out
+        productsign --sign "$APPLE_DEVCERT_INSTALL_ID" darwin-x64/darwin-x64-shieldoo-mesh-setup-unsigned.pkg out/darwin-x64-shieldoo-mesh-setup.pkg 
+        productsign --sign "$APPLE_DEVCERT_INSTALL_ID" darwin-x64/darwin-x64-shieldoo-mesh-svc-setup-unsigned.pkg out/darwin-x64-shieldoo-mesh-svc-setup.pkg 
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: darwin-x64
+        path: ./out
+
+  notary-darwin:
+    name: Send PKG Darwin to notary
+    needs: [sign-darwin]
+    runs-on: macos-11
+    steps:
+    - name: Download artifacts
+      uses: actions/download-artifact@v2
+
+    - name: Upload package darwin to notary service
+      env:
+        APPLE_NOTARY_ID: ${{ secrets.APPLE_NOTARY_ID }}
+        APPLE_NOTARY_TEAM: ${{ secrets.APPLE_NOTARY_TEAM }}
+        APPLE_NOTARY_PWD: ${{ secrets.APPLE_NOTARY_PWD }}
+      run: |
+        xcrun notarytool submit darwin-x64/darwin-x64-shieldoo-mesh-setup.pkg --apple-id $APPLE_NOTARY_ID --password $APPLE_NOTARY_PWD --team-id $APPLE_NOTARY_TEAM --wait --timeout 600s
+        xcrun notarytool submit darwin-x64/darwin-x64-shieldoo-mesh-svc-setup.pkg --apple-id $APPLE_NOTARY_ID --password $APPLE_NOTARY_PWD --team-id $APPLE_NOTARY_TEAM --wait --timeout 600s
+
+  build-linux:
+    name: Build Linux
+    runs-on: self-hosted
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    # version
+    - name: Prepare version
+      env:
+        ACTIONS_ALLOW_UNSECURE_COMMANDS: true
+      run: |
+        export MYTAG=${GITHUB_REF#refs/tags/v}
+        echo "MYTAG: $MYTAG"
+        echo "::set-env name=MYTAG::$MYTAG"
+
+    # build binaries
+    - name: Setup Go environment
+      uses: actions/setup-go@v2
+      with:
+        go-version: '1.19'
+        # Whether to download only stable versions
+        stable: true
+
+    - name: prepare app version
+      run: |
+        sed -i 's/#APPVERSION#/'$MYTAG'/g' version.go
+        sed -i 's/#APPVERSION#/'$MYTAG'/g' systray/version.go
+
+    - name: Install packages gcc
+      run: |
+        sudo apt-get -y update || echo 0
+        sudo apt-get -y install gcc libgtk-3-dev libappindicator3-dev || echo 0
+        sudo apt-get -y install --no-install-recommends -y nsis nsis-doc nsis-pluginapi || echo 0
+    - name: Build clientapp
+      run: |
+        env GOOS=linux GOARCH=amd64 go build -o ./out/asset/linux-amd64/shieldoo-mesh-app ./systray
+        cp ./install/linux/linux-amd64-install.sh ./out/asset/linux-amd64/
+        cp ./install/linux/logo.png ./out/asset/linux-amd64/
+    - name: Build clientsrv
+      run: |
+        env GOOS=linux GOARCH=amd64 go build -o ./out/asset/linux-amd64/shieldoo-mesh-srv 
+        # FIX for nebula 1.6.1 os.Exit in code
+        chmod +w /home/runner/go/pkg/mod/github.com/slackhq/nebula@v1.6.1/interface.go
+        cat ./install/patch/interface.go > /home/runner/go/pkg/mod/github.com/slackhq/nebula@v1.6.1/interface.go
+        env GOOS=linux GOARCH=amd64 go build -o ./out/asset/linux-amd64/shieldoo-mesh-srv 
+        env GOOS=linux GOARCH=arm GOARM=7  go build -o ./out/asset/linux-arm7/shieldoo-mesh-srv 
+        cp ./install/linux/linux-amd64-install-svc.sh ./out/asset/linux-amd64/
+        cp ./install/linux/linux-arm7-install-svc.sh ./out/asset/linux-arm7/
+
+    - name: Upload artifacts linux
+      uses: actions/upload-artifact@v2
+      with:
+        name: linux-amd64
+        path: out/asset/linux-amd64
+
+    - name: Upload artifacts linux arm7
+      uses: actions/upload-artifact@v2
+      with:
+        name: linux-arm7
+        path: out/asset/linux-arm7
+
+    # build in docker
+    - name: docker login
+      uses: docker/login-action@v1
+      with:
+        registry: ghcr.io
+        username: ${{ github.repository_owner }}
+        password: ${{ secrets.PAT }}
+    - name: Build and push to container registry
+      uses: docker/build-push-action@v2
+      with:
+        context: .
+        push: true
+        tags: ghcr.io/${{ github.repository_owner }}/shieldoo-mesh-srv:latest,ghcr.io/${{ github.repository_owner }}/shieldoo-mesh-srv:${{ env.MYTAG }}
+
+  build-windows:
+    name: Build Windows
+    runs-on: [self-hosted, self-hosted-safenet]
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    # version
+    - name: Prepare version
+      env:
+        ACTIONS_ALLOW_UNSECURE_COMMANDS: true
+      run: |
+        export MYTAG=${GITHUB_REF#refs/tags/v}
+        echo "MYTAG: $MYTAG"
+        echo "::set-env name=MYTAG::$MYTAG"
+
+    # build binaries
+    - name: Setup Go environment
+      uses: actions/setup-go@v3
+      with:
+        go-version: '1.19'
+        # Whether to download only stable versions
+        stable: true
+
+    - name: prepare app version
+      run: |
+        sed -i 's/#APPVERSION#/'$MYTAG'/g' version.go
+        sed -i 's/#APPVERSION#/'$MYTAG'/g' systray/version.go
+        sed -i 's/#APPVERSION#/'$MYTAG'/g' install/windows/installer.nsi
+        sed -i 's/#APPVERSION#/'$MYTAG'/g' install/windows/svcinstaller.nsi
+
+    - name: Install packages gcc
+      run: |
+        sudo apt-get -y update || echo 0
+        sudo apt-get -y install gcc libgtk-3-dev libappindicator3-dev gcc-mingw-w64 || echo 0
+        sudo apt-get -y install --no-install-recommends -y nsis nsis-doc nsis-pluginapi || echo 0
+    - name: Build clientapp
+      run: |
+        env GOOS=windows GOARCH=amd64 CGO_ENABLED=1 CC=x86_64-w64-mingw32-gcc go build -ldflags -H=windowsgui -o ./out/asset/win10-amd64/shieldoo-mesh-app.exe ./systray
+    - name: Build clientsrv
+      run: |
+        # FIX for nebula 1.6.1 route add issue
+        env GOOS=windows GOARCH=amd64 go build -o ./out/asset/win10-amd64/shieldoo-mesh-srv.exe 
+        chmod +w /home/runner/go/pkg/mod/github.com/slackhq/nebula@v1.6.1/interface.go
+        cat ./install/patch/interface.go > /home/runner/go/pkg/mod/github.com/slackhq/nebula@v1.6.1/interface.go
+        env GOOS=windows GOARCH=amd64 go build -o ./out/asset/win10-amd64/shieldoo-mesh-srv.exe 
+
+    - name: Sign win binaries
+      run: |
+        echo "${SAFENET_CER}" | base64 -d > cf.cer
+        ./install/windows/osslsigncode sign -n "Shieldoo Mesh" -certs cf.cer -pass "$SAFENET_ETOKEN" -pkcs11engine /snap/core20/1634/usr/lib/x86_64-linux-gnu/engines-1.1/libpkcs11.so -pkcs11module /usr/lib/libeToken.so -h sha256 -i "https://shieldoo.io" -in ./out/asset/win10-amd64/shieldoo-mesh-app.exe -out ./out/asset/win10-amd64/shieldoo-mesh-app-sig.exe
+        ./install/windows/osslsigncode sign -n "Shieldoo Mesh" -certs cf.cer -pass "$SAFENET_ETOKEN" -pkcs11engine /snap/core20/1634/usr/lib/x86_64-linux-gnu/engines-1.1/libpkcs11.so -pkcs11module /usr/lib/libeToken.so -h sha256 -i "https://shieldoo.io" -in ./out/asset/win10-amd64/shieldoo-mesh-srv.exe -out ./out/asset/win10-amd64/shieldoo-mesh-srv-sig.exe
+        rm ./out/asset/win10-amd64/shieldoo-mesh-app.exe
+        rm ./out/asset/win10-amd64/shieldoo-mesh-srv.exe
+        mv ./out/asset/win10-amd64/shieldoo-mesh-app-sig.exe ./out/asset/win10-amd64/shieldoo-mesh-app.exe
+        mv ./out/asset/win10-amd64/shieldoo-mesh-srv-sig.exe ./out/asset/win10-amd64/shieldoo-mesh-srv.exe
+      env:
+        SAFENET_ETOKEN: ${{ secrets.SAFENET_ETOKEN }}
+        SAFENET_CER: ${{ secrets.SAFENET_CER }}
+
+    - name: Create Windows installers
+      run: |
+        cd install/windows
+        makensis installer.nsi
+        makensis svcinstaller.nsi
+        cd ../..
+
+    - name: Sign win installers
+      run: |
+        echo "${SAFENET_CER}" | base64 -d > cf.cer
+        ./install/windows/osslsigncode sign -n "Shieldoo Mesh" -certs cf.cer -pass "$SAFENET_ETOKEN" -pkcs11engine /snap/core20/1634/usr/lib/x86_64-linux-gnu/engines-1.1/libpkcs11.so -pkcs11module /usr/lib/libeToken.so -h sha256 -i "https://shieldoo.io" -in ./out/asset/win10-amd64/shieldoo-mesh-svc-setup.exe -out ./out/asset/win10-amd64/shieldoo-mesh-svc-setup-sig.exe
+        ./install/windows/osslsigncode sign -n "Shieldoo Mesh" -certs cf.cer -pass "$SAFENET_ETOKEN" -pkcs11engine /snap/core20/1634/usr/lib/x86_64-linux-gnu/engines-1.1/libpkcs11.so -pkcs11module /usr/lib/libeToken.so -h sha256 -i "https://shieldoo.io" -in ./out/asset/win10-amd64/shieldoo-mesh-setup.exe -out ./out/asset/win10-amd64/shieldoo-mesh-setup-sig.exe
+        rm ./out/asset/win10-amd64/shieldoo-mesh-svc-setup.exe
+        rm ./out/asset/win10-amd64/shieldoo-mesh-setup.exe
+        mv ./out/asset/win10-amd64/shieldoo-mesh-svc-setup-sig.exe ./out/asset/win10-amd64/shieldoo-mesh-svc-setup.exe
+        mv ./out/asset/win10-amd64/shieldoo-mesh-setup-sig.exe ./out/asset/win10-amd64/shieldoo-mesh-setup.exe
+      env:
+        SAFENET_ETOKEN: ${{ secrets.SAFENET_ETOKEN }}
+        SAFENET_CER: ${{ secrets.SAFENET_CER }}
+
+    - name: Upload artifacts windows
+      uses: actions/upload-artifact@v2
+      with:
+        name: windows-amd64
+        path: out/asset/win10-amd64
+
+  release:
+    name: Create and Upload Release
+    needs: [build-linux, build-windows, sign-darwin]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      - name: Download artifacts
+        uses: actions/download-artifact@v2
+      - name: Prepare version
+        env:
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: true
+        run: |
+          export MYTAG=${GITHUB_REF#refs/tags/v}
+          echo "MYTAG: $MYTAG"
+          echo "::set-env name=MYTAG::$MYTAG"
+      - name: Tar linux
+        run: |
+          cd linux-amd64
+          chmod 755 shieldoo-mesh-srv
+          chmod 755 shieldoo-mesh-app
+          tar -czvpf shieldoo-mesh-setup.tar.gz shieldoo-mesh-srv shieldoo-mesh-app logo.png
+          tar -czvpf shieldoo-mesh-svc-setup.tar.gz shieldoo-mesh-srv
+      - name: Tar linux arm7
+        run: |
+          cd linux-arm7
+          chmod 755 shieldoo-mesh-srv
+          tar -czvpf shieldoo-mesh-svc-setup.tar.gz shieldoo-mesh-srv
+
+      - name: Upload artifacts linux amd64 tar
+        uses: actions/upload-artifact@v2
+        with:
+          name: linux-arm7
+          path: linux-amd64/shieldoo-mesh-svc-setup.tar.gz
+
+      - name: Upload artifacts linux arm7 tar
+        uses: actions/upload-artifact@v2
+        with:
+          name: linux-arm7
+          path: linux-amd64/shieldoo-mesh-svc-setup.tar.gz
+
+      - name: Create changelog text
+        id: changelog
+        uses: loopwerk/tag-changelog@v1
+        with:
+          token: ${{ secrets.PAT }}
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          body: |
+            ${{ steps.changelog.outputs.changes }}
+          draft: false
+          prerelease: false
+
+      - name: Upload windows-amd64 shieldoo-mesh-setup.exe
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./windows-amd64/shieldoo-mesh-setup.exe
+          asset_name: windows-amd64-shieldoo-mesh-setup.exe
+          asset_content_type: application/octet-stream
+      - name: Upload windows-amd64 shieldoo-mesh-svc-setup.exe
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./windows-amd64/shieldoo-mesh-svc-setup.exe
+          asset_name: windows-amd64-shieldoo-mesh-svc-setup.exe
+          asset_content_type: application/octet-stream
+
+      - name: Upload linux-amd64 shieldoo-mesh-setup.tar.gz
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./linux-amd64/shieldoo-mesh-setup.tar.gz
+          asset_name: linux-amd64-shieldoo-mesh-setup.tar.gz
+          asset_content_type: application/gzip
+      - name: Upload linux-amd64 shieldoo-mesh-svc-setup.tar.gz
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./linux-amd64/shieldoo-mesh-svc-setup.tar.gz
+          asset_name: linux-amd64-shieldoo-mesh-svc-setup.tar.gz
+          asset_content_type: application/gzip
+      - name: Upload linux-amd64 linux-amd64-install-svc.sh
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./linux-amd64/linux-amd64-install-svc.sh
+          asset_name: linux-amd64-install-svc.sh
+          asset_content_type: text/plain
+      - name: Upload linux-amd64 linux-amd64-install.sh
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./linux-amd64/linux-amd64-install.sh
+          asset_name: linux-amd64-install.sh
+          asset_content_type: text/plain
+
+      - name: Upload linux-arm7 shieldoo-mesh-svc-setup.tar.gz
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./linux-arm7/shieldoo-mesh-svc-setup.tar.gz
+          asset_name: linux-arm7-shieldoo-mesh-svc-setup.tar.gz
+          asset_content_type: application/gzip
+      - name: Upload linux-arm7 linux-arm7-install-svc.sh
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./linux-arm7/linux-arm7-install-svc.sh
+          asset_name: linux-arm7-install-svc.sh
+          asset_content_type: text/plain
+
+      - name: Upload darwin-x64 darwin-x64-shieldoo-mesh-setup.pkg
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./darwin-x64/darwin-x64-shieldoo-mesh-setup.pkg
+          asset_name: darwin-x64-shieldoo-mesh-setup.pkg
+          asset_content_type: application/octet-stream
+
+      - name: Upload darwin-x64 darwin-x64-shieldoo-mesh-svc-setup.pkg
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./darwin-x64/darwin-x64-shieldoo-mesh-svc-setup.pkg
+          asset_name: darwin-x64-shieldoo-mesh-svc-setup.pkg
+          asset_content_type: application/octet-stream
+
+  publish-release:
+    name: Publish Release to CDN
+    needs: [release]
+    runs-on: ubuntu-latest
+    environment: publish
+    steps:
+      - uses: actions/checkout@v2
+      - uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      - name: Download artifacts
+        uses: actions/download-artifact@v2
+      - name: Prepare version
+        env:
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: true
+        run: |
+          export MYTAG=${GITHUB_REF#refs/tags/v}
+          echo "MYTAG: $MYTAG"
+          echo "::set-env name=MYTAG::$MYTAG"
+
+      - name: Upload to blob storage
+        uses: azure/CLI@v1
+        env:
+          AZURE_STORAGE_KEY: ${{ secrets.AZURE_STORAGE_KEY }}
+          AZURE_STORAGE_NAME: ${{ secrets.AZURE_STORAGE_NAME }}
+        with:
+          inlineScript: |
+            echo "$MYTAG" > version.txt
+            az storage blob upload --account-name $AZURE_STORAGE_NAME --account-key $AZURE_STORAGE_KEY --overwrite --container-name '$web' --file version.txt --name latest/version.txt
+            az storage blob upload --account-name $AZURE_STORAGE_NAME --account-key $AZURE_STORAGE_KEY --overwrite --container-name '$web' --file ./windows-amd64/shieldoo-mesh-setup.exe --name latest/windows-amd64-shieldoo-mesh-setup.exe
+            az storage blob upload --account-name $AZURE_STORAGE_NAME --account-key $AZURE_STORAGE_KEY --overwrite --container-name '$web' --file ./windows-amd64/shieldoo-mesh-svc-setup.exe --name latest/windows-amd64-shieldoo-mesh-svc-setup.exe
+            az storage blob upload --account-name $AZURE_STORAGE_NAME --account-key $AZURE_STORAGE_KEY --overwrite --container-name '$web' --file ./linux-amd64/shieldoo-mesh-setup.tar.gz --name latest/linux-amd64-shieldoo-mesh-setup.tar.gz
+            az storage blob upload --account-name $AZURE_STORAGE_NAME --account-key $AZURE_STORAGE_KEY --overwrite --container-name '$web' --file ./linux-amd64/shieldoo-mesh-svc-setup.tar.gz --name latest/linux-amd64-shieldoo-mesh-svc-setup.tar.gz
+            az storage blob upload --account-name $AZURE_STORAGE_NAME --account-key $AZURE_STORAGE_KEY --overwrite --container-name '$web' --file ./linux-arm7/shieldoo-mesh-svc-setup.tar.gz --name latest/linux-arm7-shieldoo-mesh-svc-setup.tar.gz
+            az storage blob upload --account-name $AZURE_STORAGE_NAME --account-key $AZURE_STORAGE_KEY --overwrite --container-name '$web' --file ./linux-amd64/linux-amd64-install.sh --name latest/linux-amd64-install.sh
+            az storage blob upload --account-name $AZURE_STORAGE_NAME --account-key $AZURE_STORAGE_KEY --overwrite --container-name '$web' --file ./linux-amd64/linux-amd64-install-svc.sh --name latest/linux-amd64-install-svc.sh
+            az storage blob upload --account-name $AZURE_STORAGE_NAME --account-key $AZURE_STORAGE_KEY --overwrite --container-name '$web' --file ./linux-arm7/linux-arm7-install-svc.sh --name latest/linux-arm7-install-svc.sh
+            az storage blob upload --account-name $AZURE_STORAGE_NAME --account-key $AZURE_STORAGE_KEY --overwrite --container-name '$web' --file ./darwin-x64/darwin-x64-shieldoo-mesh-setup.pkg --name latest/darwin-x64-shieldoo-mesh-setup.pkg
+            az storage blob upload --account-name $AZURE_STORAGE_NAME --account-key $AZURE_STORAGE_KEY --overwrite --container-name '$web' --file ./darwin-x64/darwin-x64-shieldoo-mesh-svc-setup.pkg --name latest/darwin-x64-shieldoo-mesh-svc-setup.pkg
+            az storage blob upload --account-name $AZURE_STORAGE_NAME --account-key $AZURE_STORAGE_KEY --overwrite --container-name '$web' --file ./windows-amd64/shieldoo-mesh-setup.exe --name $MYTAG/windows-amd64-shieldoo-mesh-setup.exe
+            az storage blob upload --account-name $AZURE_STORAGE_NAME --account-key $AZURE_STORAGE_KEY --overwrite --container-name '$web' --file ./windows-amd64/shieldoo-mesh-svc-setup.exe --name $MYTAG/windows-amd64-shieldoo-mesh-svc-setup.exe
+            az storage blob upload --account-name $AZURE_STORAGE_NAME --account-key $AZURE_STORAGE_KEY --overwrite --container-name '$web' --file ./linux-amd64/shieldoo-mesh-setup.tar.gz --name $MYTAG/linux-amd64-shieldoo-mesh-setup.tar.gz
+            az storage blob upload --account-name $AZURE_STORAGE_NAME --account-key $AZURE_STORAGE_KEY --overwrite --container-name '$web' --file ./linux-amd64/shieldoo-mesh-svc-setup.tar.gz --name $MYTAG/linux-amd64-shieldoo-mesh-svc-setup.tar.gz
+            az storage blob upload --account-name $AZURE_STORAGE_NAME --account-key $AZURE_STORAGE_KEY --overwrite --container-name '$web' --file ./linux-arm7/shieldoo-mesh-svc-setup.tar.gz --name $MYTAG/linux-arm7-shieldoo-mesh-svc-setup.tar.gz
+            az storage blob upload --account-name $AZURE_STORAGE_NAME --account-key $AZURE_STORAGE_KEY --overwrite --container-name '$web' --file ./linux-amd64/linux-amd64-install.sh --name $MYTAG/linux-amd64-install.sh
+            az storage blob upload --account-name $AZURE_STORAGE_NAME --account-key $AZURE_STORAGE_KEY --overwrite --container-name '$web' --file ./linux-amd64/linux-amd64-install-svc.sh --name $MYTAG/linux-amd64-install-svc.sh
+            az storage blob upload --account-name $AZURE_STORAGE_NAME --account-key $AZURE_STORAGE_KEY --overwrite --container-name '$web' --file ./linux-arm7/linux-arm7-install-svc.sh --name $MYTAG/linux-arm7-install-svc.sh
+            az storage blob upload --account-name $AZURE_STORAGE_NAME --account-key $AZURE_STORAGE_KEY --overwrite --container-name '$web' --file ./darwin-x64/darwin-x64-shieldoo-mesh-setup.pkg --name $MYTAG/darwin-x64-shieldoo-mesh-setup.pkg
+            az storage blob upload --account-name $AZURE_STORAGE_NAME --account-key $AZURE_STORAGE_KEY --overwrite --container-name '$web' --file ./darwin-x64/darwin-x64-shieldoo-mesh-svc-setup.pkg --name $MYTAG/darwin-x64-shieldoo-mesh-svc-setup.pkg
+
+      - name: Purge CDN endpoint
+        uses: azure/CLI@v1
+        env:
+          CDN_PROFILE_NAME:  ${{ secrets.CDN_PROFILE_NAME }}
+          CDN_ENDPOINT:  ${{ secrets.CDN_ENDPOINT }}
+          CDN_RESOURCE_GROUP:  ${{ secrets.CDN_RESOURCE_GROUP }}
+          CDN_SUBSCRIPTION:  ${{ secrets.CDN_SUBSCRIPTION }}
+        with:
+          inlineScript: |
+            az cdn endpoint purge --content-paths  "/*" --profile-name "$CDN_PROFILE_NAME" --name "$CDN_ENDPOINT" --resource-group "$CDN_RESOURCE_GROUP" --subscription "$CDN_SUBSCRIPTION"

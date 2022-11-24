@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# stop service
+sudo launchctl unload /Library/LaunchDaemons/shieldoo-mesh.plist
+sudo rm /Library/LaunchDaemons/shieldoo-mesh.plist
+
+# killall client apps
+sudo killall shieldoo-mesh-app
+
+exit 0

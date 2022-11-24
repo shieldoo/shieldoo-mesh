@@ -1,0 +1,12 @@
+#!/bin/bash
+
+# change access rights
+sudo chgrp -R staff /Applications/Shieldoo\ Mesh.app
+
+# register service
+sudo /Applications/Shieldoo\ Mesh.app/Contents/MacOS/shieldoo-mesh-srv -desktop -service install
+
+#start service
+sudo /Applications/Shieldoo\ Mesh.app/Contents/MacOS/shieldoo-mesh-srv -desktop -service start
+
+exit 0
