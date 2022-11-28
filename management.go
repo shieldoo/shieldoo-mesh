@@ -73,34 +73,34 @@ func telemetryProcessChanges(cfg *ManagementResponseConfig) {
 }
 
 func telemetryCollectLogData() string {
-	_log := ""
+	tmplog := ""
 
 	// collect telemtry data
-	_logreading := true
+	logreading := true
 	// in first step we will try to read any data from channel, if there is nothing we will wait for defined time
 	select {
-	case _l := <-logdata:
-		if _l != "" {
-			_log += _l + "\n"
+	case l := <-logdata:
+		if l != "" {
+			tmplog += l + "\n"
 		}
 	case <-time.After(time.Duration(myconfig.SendInterval) * 1000 * time.Millisecond):
 	}
 	// there we will try to read rest of data from channel
-	for _logreading {
+	for logreading {
 		select {
-		case _l := <-logdata:
-			if _l != "" {
-				_log += _l + "\n"
+		case l := <-logdata:
+			if l != "" {
+				tmplog += l + "\n"
 			}
 		case <-time.After(100 * time.Millisecond):
-			_logreading = false
+			logreading = false
 		}
 	}
-	return _log
+	return tmplog
 }
 
 func telemetrySend() (ret bool) {
-	_log := ""
+	tmplog := ""
 
 	// exception handling
 	defer func() {
@@ -110,8 +110,8 @@ func telemetrySend() (ret bool) {
 			ret = false
 			// return log data to memory for next time
 			// if logdata are extremly big forgot them
-			if len(_log) < 16384 {
-				logdata <- _log
+			if len(tmplog) < 16384 {
+				logdata <- tmplog
 			}
 			// because there was a error, lets wait for a while
 			time.Sleep(2500 * time.Millisecond)
@@ -119,7 +119,7 @@ func telemetrySend() (ret bool) {
 	}()
 
 	// collect telemtry data
-	_log = telemetryCollectLogData()
+	tmplog = telemetryCollectLogData()
 
 	ret = false
 	// sned telemetry
@@ -132,7 +132,7 @@ func telemetrySend() (ret bool) {
 			ConfigHash:    localconf.ConfigHash,
 			DnsHash:       dnsconf.DnsHash,
 			Timestamp:     time.Now().UTC(),
-			LogData:       _log,
+			LogData:       tmplog,
 			OverWebSocket: myconfig.RestrictedNetwork,
 			IsConnected:   NetutilsPing(lighthouseIP),
 		}

@@ -13,9 +13,11 @@ import (
 const connPipeName = "/tmp/shieldoo.sock"
 
 func svcFirewallCleanup() {
+	// Do nothing because it is not needed for linux
 }
 
 func svcFirewallSetup(cidr string) {
+	// Do nothing because it is not needed for linux
 }
 
 func createCommandListener() (l net.Listener, err error) {
@@ -38,7 +40,9 @@ func HookLogger(l *logrus.Logger) {
 }
 
 func HookLogerInit() {
+	// Do nothing because it is not needed for linux
 }
 
 func HookLogerClose() {
+	// Do nothing because it is not needed for linux
 }

@@ -43,11 +43,14 @@ func New(config *config.Config) *UDP {
 	return t
 }
 
+const errmsgUdpStartError = "UDP.Start error: %v\n"
+const errmsgUdpPastSendDataFailed = "UDP Past [%v] Send data failed: %v\n"
+
 // Start listen and serve
 func (t *UDP) Start() {
 	addr, err := net.ResolveUDPAddr("udp", t.config.Local)
 	if err != nil {
-		log.Printf("UDP.Start error: %v\n", err)
+		log.Printf(errmsgUdpStartError, err)
 		return
 	}
 	for i := 0; i < 16; i++ {
@@ -60,7 +63,7 @@ func (t *UDP) Start() {
 		}
 	}
 	if err != nil {
-		log.Printf("UDP.Start error: %v\n", err)
+		log.Printf(errmsgUdpStartError, err)
 		return
 	}
 	log.Printf("UDP.Start %v, backends: %v\n", t.config.Local, t.config.Servers)
@@ -111,7 +114,7 @@ func (t *UDP) handleServer() {
 			_, err = dconn.Write(msg.Data)
 			dconn.SetWriteDeadline(time.Time{})
 			if err != nil {
-				log.Printf("UDP Past [%v] Send data failed: %v\n", dconn.RemoteAddr().String(), err)
+				log.Printf(errmsgUdpPastSendDataFailed, dconn.RemoteAddr().String(), err)
 			} else {
 				t.connStore.Store(msg.Addr.String(), &conn{Conn: dconn, Active: time.Now()})
 				continue
@@ -131,7 +134,7 @@ func (t *UDP) handleServer() {
 		_, err = dconn.Write(msg.Data)
 		dconn.SetWriteDeadline(time.Time{})
 		if err != nil {
-			log.Printf("UDP Past [%v] Send data failed: %v\n", dconn.RemoteAddr().String(), err)
+			log.Printf(errmsgUdpPastSendDataFailed, dconn.RemoteAddr().String(), err)
 		} else {
 			t.connStore.Store(msg.Addr.String(), &conn{Conn: dconn, Active: time.Now()})
 		}
@@ -159,7 +162,7 @@ func (t *UDP) handleClient() {
 	for msg := range t.channelClient {
 		_, err := msg.Conn.WriteToUDP(msg.Data, msg.Addr)
 		if err != nil {
-			log.Printf("UDP Past [%v] Send data failed: %v\n", msg.Addr.String(), err)
+			log.Printf(errmsgUdpPastSendDataFailed, msg.Addr.String(), err)
 		}
 	}
 }
