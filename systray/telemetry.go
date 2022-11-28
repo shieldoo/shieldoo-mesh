@@ -45,6 +45,8 @@ type ManagementSimpleUPNResponse struct {
 	ServerMessage string                               `json:"servermessage"`
 }
 
+const msgLoginError = "Login error: "
+
 var localconf ManagementSimpleUPNResponse
 
 var gtelLogin OAuthLoginResponse
@@ -64,7 +66,7 @@ func telemetryLogin() error {
 		jsonReq, _ := json.Marshal(req)
 		response, err := http.Post(uri, "application/json; charset=utf-8", bytes.NewBuffer(jsonReq))
 		if err != nil {
-			log.Error("Login error: ", err)
+			log.Error(msgLoginError, err)
 			return err
 		}
 		log.Debug("Login http status: ", response.Status)
@@ -73,12 +75,12 @@ func telemetryLogin() error {
 		}
 		bodyBytes, err := ioutil.ReadAll(response.Body)
 		if err != nil {
-			log.Error("Login error: ", err)
+			log.Error(msgLoginError, err)
 			return err
 		}
 		err = json.Unmarshal(bodyBytes, &gtelLogin)
 		if err != nil {
-			log.Error("Login error: ", err)
+			log.Error(msgLoginError, err)
 		}
 		return err
 	}

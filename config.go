@@ -28,11 +28,11 @@ const MYCONFIG_FILENAME = "myconfig.yaml"
 var execPath string
 
 func WSTunnelCredentials() (usr string, pwd string, wss string) {
-	_cred := strings.Split(localconf.ConfigData.WebSocketUsernamePassword, ":")
-	usr = _cred[0]
+	cred := strings.Split(localconf.ConfigData.WebSocketUsernamePassword, ":")
+	usr = cred[0]
 	pwd = ""
-	if len(_cred) > 1 {
-		pwd = _cred[1]
+	if len(cred) > 1 {
+		pwd = cred[1]
 	}
 	wss = strings.TrimSpace(localconf.ConfigData.WebSocketUrl)
 	return

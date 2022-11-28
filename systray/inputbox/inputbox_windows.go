@@ -1,14 +1,14 @@
 package inputbox
 
 import (
-	"io"
-	"strings"
-	"sync"
-	"os/exec"
-	"errors"
-	"fmt"
 	"crypto/rand"
 	"encoding/hex"
+	"errors"
+	"fmt"
+	"io"
+	"os/exec"
+	"strings"
+	"sync"
 	"syscall"
 )
 
@@ -182,7 +182,6 @@ func InputBox(title, message, defaultAnswer string) (string, bool) {
 		$answer = [Microsoft.VisualBasic.Interaction]::InputBox($msg, $title, $default)
 		Write-Output $answer
 		`)
-	// FIXME: if cancel button is pressed in dialog, we should return false
 	if err != nil {
 		return "", false
 	}

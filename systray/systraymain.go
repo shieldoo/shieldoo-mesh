@@ -81,8 +81,16 @@ func init() {
 	execPath = filepath.Dir(ex)
 }
 
+// messages
+const msgDisconnected = "shieldoo - disconnected"
+const msgLogo = "/logo.png"
+const msgConnectWithProfile = "Connect with profile .."
+const msgWaitingForSignin = "shieldoo - waiting for sign-in"
+const msgGotoPortal = "Go to shieldoo portal: "
+
 func main() {
 	onExit := func() {
+		// not needed now
 	}
 
 	flag.Usage = func() {
@@ -242,7 +250,7 @@ func connectNebulaUI(index int) {
 	rpcSendReceive(&r)
 	running = true
 	systraySetTemplateIcon(icon.IconSigned)
-	systraySetToolTip("shieldoo - disconnected")
+	systraySetToolTip(msgDisconnected)
 	serverMessage = ""
 }
 
@@ -262,10 +270,10 @@ func disconnectNebulaUI() {
 	running = false
 	runningDisconnecting = false
 	systraySetTemplateIcon(icon.IconSigned)
-	systraySetToolTip("shieldoo - disconnected")
+	systraySetToolTip(msgDisconnected)
 	beeep.Notify(
 		"DISCONNECTED", "You were disconnected from Shieldoo Mesh.",
-		filepath.FromSlash(execPath+"/logo.png"))
+		filepath.FromSlash(execPath+msgLogo))
 	UpdManagerSetCheck()
 	connectionIsConnected = false
 }
@@ -288,7 +296,7 @@ func showServerMessage() {
 		case msg := <-serverMessageChan:
 			beeep.Notify(
 				"SHIELDOO INFO", msg,
-				filepath.FromSlash(execPath+"/logo.png"))
+				filepath.FromSlash(execPath+msgLogo))
 		}
 	}
 }
@@ -369,8 +377,8 @@ func connectEnable() {
 			systrayMenuItemDisable(mConnect)
 		} else {
 			mConnectDefault.Hide()
-			mConnect.SetTitle("Connect with profile ..")
-			mConnect.SetTooltip("Connect with profile ..")
+			mConnect.SetTitle(msgConnectWithProfile)
+			mConnect.SetTooltip(msgConnectWithProfile)
 			mConnect.Show()
 			systrayMenuItemEnable(mConnect)
 		}
@@ -389,8 +397,8 @@ func connectDisable() {
 			systrayMenuItemDisable(mConnect)
 		} else {
 			mConnectDefault.Hide()
-			mConnect.SetTitle("Connect with profile ..")
-			mConnect.SetTooltip("Connect with profile ..")
+			mConnect.SetTitle(msgConnectWithProfile)
+			mConnect.SetTooltip(msgConnectWithProfile)
 			mConnect.Show()
 			systrayMenuItemDisable(mConnect)
 		}
@@ -422,8 +430,8 @@ func registerToServer() (secret string, upn string, provider string, uri string,
 		}
 	}()
 
-	_uri := myconfig.Uri + "logindevice/" + registeringCode
-	response, err := http.Get(_uri)
+	tmpuri := myconfig.Uri + "logindevice/" + registeringCode
+	response, err := http.Get(tmpuri)
 	if err != nil {
 		panic(err)
 	}
@@ -460,7 +468,7 @@ func checkConnectionStatus() {
 		if e == nil {
 			if myconfig.Secret == "" {
 				systraySetTemplateIcon(icon.IconWaitForSignIn)
-				systraySetToolTip("shieldoo - waiting for sign-in")
+				systraySetToolTip(msgWaitingForSignin)
 			} else {
 				if !running && r.IsRunning {
 					connectNebulaUI(0)
@@ -471,12 +479,12 @@ func checkConnectionStatus() {
 					disconnectNebulaUI()
 				}
 			}
-			var _icn *[]byte
+			var tmpicn *[]byte
 			if running {
 				if !myconfig.RestrictedNetwork && r.RestrictedNetwork {
 					beeep.Notify(
 						"RECONNECTING", "You were switched to restrictive network mode!",
-						filepath.FromSlash(execPath+"/logo.png"))
+						filepath.FromSlash(execPath+msgLogo))
 				}
 				myconfig.RestrictedNetwork = r.RestrictedNetwork
 				if r.IsConnected && !runningDisconnecting {
@@ -484,7 +492,7 @@ func checkConnectionStatus() {
 					if !connectionIsConnected {
 						beeep.Notify(
 							"CONNECTED", "You were connected to Shieldoo Mesh.",
-							filepath.FromSlash(execPath+"/logo.png"))
+							filepath.FromSlash(execPath+msgLogo))
 						UpdManagerSetCheck()
 						connectionIsConnected = true
 						systraySetTemplateIcon(icon.IconConnected1)
@@ -506,51 +514,51 @@ func checkConnectionStatus() {
 				} else {
 					switch iconConnectingIndex {
 					case 1:
-						_icn = &icon.IconConnecting1
+						tmpicn = &icon.IconConnecting1
 					case 2:
-						_icn = &icon.IconConnecting2
+						tmpicn = &icon.IconConnecting2
 					case 3:
-						_icn = &icon.IconConnecting3
+						tmpicn = &icon.IconConnecting3
 					case 4:
-						_icn = &icon.IconConnecting4
+						tmpicn = &icon.IconConnecting4
 					case 5:
-						_icn = &icon.IconConnecting5
+						tmpicn = &icon.IconConnecting5
 					case 6:
-						_icn = &icon.IconConnecting6
+						tmpicn = &icon.IconConnecting6
 					case 7:
-						_icn = &icon.IconConnecting7
+						tmpicn = &icon.IconConnecting7
 					default:
-						_icn = &icon.IconConnecting8
+						tmpicn = &icon.IconConnecting8
 						iconConnectingIndex = 0
 					}
 					iconConnectingIndex++
-					systraySetTemplateIcon(*_icn)
+					systraySetTemplateIcon(*tmpicn)
 					systraySetToolTip("shieldoo - connecting ..")
 				}
 			} else {
 				if registering {
-					var _icn *[]byte
+					var tmpicn *[]byte
 					switch iconConnectingIndex {
 					case 1:
-						_icn = &icon.IconSigning1
+						tmpicn = &icon.IconSigning1
 					case 2:
-						_icn = &icon.IconSigning2
+						tmpicn = &icon.IconSigning2
 					case 3:
-						_icn = &icon.IconSigning3
+						tmpicn = &icon.IconSigning3
 					case 4:
-						_icn = &icon.IconSigning4
+						tmpicn = &icon.IconSigning4
 					case 5:
-						_icn = &icon.IconSigning5
+						tmpicn = &icon.IconSigning5
 					case 6:
-						_icn = &icon.IconSigning6
+						tmpicn = &icon.IconSigning6
 					case 7:
-						_icn = &icon.IconSigning7
+						tmpicn = &icon.IconSigning7
 					default:
-						_icn = &icon.IconSigning8
+						tmpicn = &icon.IconSigning8
 						iconConnectingIndex = 0
 					}
 					iconConnectingIndex++
-					systraySetTemplateIcon(*_icn)
+					systraySetTemplateIcon(*tmpicn)
 					systraySetToolTip("shieldoo - signing-in ..")
 					errConnI = !errConnI
 					if errConnI {
@@ -569,11 +577,11 @@ func checkConnectionStatus() {
 				} else {
 					if myconfig.Secret != "" {
 						systraySetTemplateIcon(icon.IconSigned)
-						systraySetToolTip("shieldoo - disconnected")
+						systraySetToolTip(msgDisconnected)
 						connectEnable()
 					} else {
 						systraySetTemplateIcon(icon.IconWaitForSignIn)
-						systraySetToolTip("shieldoo - waiting for sign-in")
+						systraySetToolTip(msgWaitingForSignin)
 					}
 				}
 			}
@@ -605,13 +613,13 @@ func inputUri() {
 
 func onReady() {
 	systraySetTemplateIcon(icon.IconWaitForSignIn)
-	systraySetToolTip("shieldoo - waiting for sign-in")
+	systraySetToolTip(msgWaitingForSignin)
 	systray.SetTitle("")
 
 	// We can manipulate the systray in other goroutines
 	go func() {
 		systraySetTemplateIcon(icon.IconWaitForSignIn)
-		systraySetToolTip("shieldoo - waiting for sign-in")
+		systraySetToolTip(msgWaitingForSignin)
 		systray.SetTitle("")
 
 		// enable autostart config
@@ -621,7 +629,7 @@ func onReady() {
 		mUpdate.Hide()
 		UpdManagerInitMenuItem(mUpdate)
 
-		mConnect = systray.AddMenuItem("Connect with profile ..", "Connect with profile ..")
+		mConnect = systray.AddMenuItem(msgConnectWithProfile, msgConnectWithProfile)
 		mConnectSub = []*systray.MenuItem{}
 		for i := 0; i < maxMenuItems; i++ {
 			mConnectSub = append(mConnectSub, nil)
@@ -636,7 +644,7 @@ func onReady() {
 		mEditUrl = systray.AddMenuItem("Edit organization name", "Edit organization name")
 		mChecked := systray.AddMenuItemCheckbox("Autostart enabled", "Autostart enabled", autostartApp.IsEnabled())
 		systray.AddSeparator()
-		mWeb := systray.AddMenuItem("Go to shieldoo portal: "+myconfig.Uri, "Go to shieldoo portal: "+myconfig.Uri)
+		mWeb := systray.AddMenuItem(msgGotoPortal+myconfig.Uri, msgGotoPortal+myconfig.Uri)
 		mAccess := systray.AddMenuItem("Devices in mesh which I can access.", "Devices in mesh which I can access.")
 		systray.AddSeparator()
 		mVersion := systray.AddMenuItem("version: "+APPVERSION, "version: "+APPVERSION)
@@ -712,16 +720,16 @@ func onReady() {
 			case <-mEditUrl.ClickedCh:
 				prevUri := myconfig.Uri
 				inputUri()
-				mWeb.SetTitle("Go to shieldoo portal: " + myconfig.Uri)
-				mWeb.SetTooltip("Go to shieldoo portal: " + myconfig.Uri)
+				mWeb.SetTitle(msgGotoPortal + myconfig.Uri)
+				mWeb.SetTooltip(msgGotoPortal + myconfig.Uri)
 				if prevUri != myconfig.Uri {
 					connectDisable()
 				}
 			case <-mLogin.ClickedCh:
 				if myconfig.Uri == "" {
 					inputUri()
-					mWeb.SetTitle("Go to shieldoo portal: " + myconfig.Uri)
-					mWeb.SetTooltip("Go to shieldoo portal: " + myconfig.Uri)
+					mWeb.SetTitle(msgGotoPortal + myconfig.Uri)
+					mWeb.SetTooltip(msgGotoPortal + myconfig.Uri)
 				}
 				if myconfig.Uri != "" {
 					registeringCode = GenerateRandomString(64)
