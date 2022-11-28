@@ -53,8 +53,8 @@ func UpdManagerRun() {
 }
 
 func updManagerDownloadVersion() (string, error) {
-	_uri := "https://download.shieldoo.io/latest/version.txt"
-	response, err := http.Get(_uri)
+	tmpuri := "https://download.shieldoo.io/latest/version.txt"
+	response, err := http.Get(tmpuri)
 	if err != nil {
 		return "", err
 	}
