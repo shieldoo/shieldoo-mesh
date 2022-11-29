@@ -1,3 +1,10 @@
+# Shieldoo Mesh client
+[![Build](https://github.com/shieldoo/shieldoo-mesh/actions/workflows/build.yml/badge.svg)](https://github.com/shieldoo/shieldoo-mesh/actions/workflows/build.yml) 
+[![Release](https://img.shields.io/github/v/release/shieldoo/shieldoo-mesh?logo=GitHub&style=flat-square)](https://github.com/shieldoo/shieldoo-mesh/releases/latest) 
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=shieldoo_shieldoo-mesh&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=shieldoo_shieldoo-mesh) 
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=shieldoo_shieldoo-mesh&metric=bugs)](https://sonarcloud.io/summary/new_code?id=shieldoo_shieldoo-mesh) 
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=shieldoo_shieldoo-mesh&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=shieldoo_shieldoo-mesh)
+
 # What is shieldoo-mesh client applications
 
 Shieldoo-mesh application is wrapper application around incredible network mesh solution *nebula*. 
