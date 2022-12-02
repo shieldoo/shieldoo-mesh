@@ -122,6 +122,9 @@ func main() {
 
 	myconfig.RunAsDeskServiceRPC = *desktopFlag
 
+	// cleanup DNS records in hosts file
+	SvcCleanupDNS()
+
 	if *serviceFlag != "" {
 		err := SystemSvcDo(*serviceFlag, *desktopFlag, *debugFlag)
 		if *serviceFlag == "uninstall" || *serviceFlag == "stop" || err == nil {
@@ -130,9 +133,6 @@ func main() {
 			os.Exit(1)
 		}
 	}
-
-	// cleanup DNS records in hosts file
-	SvcCleanupDNS()
 
 	// start desktop service or standard server service
 	if *desktopFlag {
