@@ -131,6 +131,9 @@ func main() {
 		}
 	}
 
+	// cleanup DNS records in hosts file
+	SvcCleanupDNS()
+
 	// start desktop service or standard server service
 	if *desktopFlag {
 		DeskserviceStart(false)
