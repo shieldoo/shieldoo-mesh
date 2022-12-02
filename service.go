@@ -457,10 +457,15 @@ func SvcConnectionStop() {
 	removeLocalConf()
 
 	// cleanup DNS
-	loadDNS()
+	SvcCleanupDNS()
 
 	// cleanup windows firewall
 	if myconfig.WindowsFW {
 		svcFirewallCleanup()
 	}
+}
+
+func SvcCleanupDNS() {
+	dnsconf = ManagementResponseDNS{}
+	loadDNS()
 }
