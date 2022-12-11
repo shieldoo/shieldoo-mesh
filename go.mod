@@ -5,7 +5,7 @@ go 1.19
 require (
 	github.com/Microsoft/go-winio v0.5.1
 	github.com/cloudfieldcz/beeep v0.1.1
-	github.com/cloudfieldcz/systray v1.1.1-cf
+	github.com/cloudfieldcz/systray v1.2.1-cf
 	github.com/go-ping/ping v0.0.0-20211130115550-779d1e919534
 	github.com/gorilla/websocket v1.5.0
 	github.com/jackpal/gateway v1.0.7

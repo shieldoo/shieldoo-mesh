@@ -58,8 +58,8 @@ github.com/chzyer/test v0.0.0-20180213035817-a1ea475d72b1/go.mod h1:Q3SI9o4m/ZMn
 github.com/client9/misspell v0.3.4/go.mod h1:qj6jICC3Q7zFZvVWo7KLAzC3yx5G7kyvSDkc90ppPyw=
 github.com/cloudfieldcz/beeep v0.1.1 h1:QiJbWKYVDlmuFQ2qnTQXHqLuvudkPx+ZHVvcyRvPJCc=
 github.com/cloudfieldcz/beeep v0.1.1/go.mod h1:H3GyGyhAk0M/GLleM+bmL8toL+H3oaPr2s8ETnq2Hek=
-github.com/cloudfieldcz/systray v1.1.1-cf h1:uBv6f3Dv5vZA6E0Nvrfsgh8d4hWh/1j0HPpNaR6N69Y=
-github.com/cloudfieldcz/systray v1.1.1-cf/go.mod h1:TSLiLWbpfGCpJCsxA8SvcDl+rjj9CauoL4QTk7EdYSY=
+github.com/cloudfieldcz/systray v1.2.1-cf h1:7IEozooN7sUGQHDTRpH3/FpeXEPesrZWv8c2KyIYDkc=
+github.com/cloudfieldcz/systray v1.2.1-cf/go.mod h1:TSLiLWbpfGCpJCsxA8SvcDl+rjj9CauoL4QTk7EdYSY=
 github.com/cncf/udpa/go v0.0.0-20191209042840-269d4d468f6f/go.mod h1:M8M6+tZqaGXZJjfX53e64911xZQV5JYwmTeXPW+k8Sc=
 github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ33E=
 github.com/cyberdelia/go-metrics-graphite v0.0.0-20161219230853-39f87cc3b432 h1:M5QgkYacWj0Xs8MhpIK/5uwU02icXpEoSo9sM2aRCps=
