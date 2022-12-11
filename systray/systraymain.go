@@ -442,6 +442,7 @@ func activateFavoriteItem(idx int) {
 			mWeb.SetTitle(msgGotoPortal + myconfig.Uri)
 			mWeb.SetTooltip(msgGotoPortal + myconfig.Uri)
 		}
+		saveClientConf()
 	}
 }
 
@@ -822,6 +823,9 @@ func onReady() {
 			case <-mDisconnect.ClickedCh:
 				disconnectNebulaUI()
 			case <-mQuit.ClickedCh:
+				if running {
+					disconnectNebulaUI()
+				}
 				systray.Quit()
 				fmt.Println("Quit now..")
 				return
