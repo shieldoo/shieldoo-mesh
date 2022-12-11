@@ -168,19 +168,25 @@ func main() {
 	systray.Run(onReady, onExit)
 }
 
+const maxSignInTimeSeconds = 300
+
 var mConnectEnabled bool = true
 var mUpdate *systray.MenuItem = nil
 var mConnect *systray.MenuItem = nil
+var mWeb *systray.MenuItem = nil
+var mFavoriteSelector *systray.MenuItem = nil
 var mConnectDefault *systray.MenuItem = nil
 var mLogin *systray.MenuItem = nil
 var mEditUrl *systray.MenuItem = nil
 var mConnectSub []*systray.MenuItem = nil
+var mFavorites []*systray.MenuItem = nil
 var maxMenuItems int = 24
 var mDisconnect *systray.MenuItem = nil
 var running bool = false
 var runningDisconnecting bool = false
 var activeaccessid int = 0
 var registering bool = false
+var registeringStarted time.Time
 var registeringCode string = ""
 var serverMessage string = ""
 var systrayToolTip string = ""
@@ -231,6 +237,9 @@ func connectNebulaUI(index int) {
 	if mEditUrl != nil {
 		systrayMenuItemDisable(mEditUrl)
 	}
+	if mFavoriteSelector != nil {
+		systrayMenuItemDisable(mFavoriteSelector)
+	}
 	if running {
 		return
 	}
@@ -264,6 +273,9 @@ func disconnectNebulaUI() {
 	}
 	if mEditUrl != nil {
 		systrayMenuItemEnable(mEditUrl)
+	}
+	if mFavoriteSelector != nil {
+		systrayMenuItemEnable(mFavoriteSelector)
 	}
 	runningDisconnecting = true
 	rpcSendReceive(&rpc.RpcCommandStop{Version: rpc.RPCVERSION})
@@ -404,6 +416,33 @@ func connectDisable() {
 		}
 	}
 	mConnectEnabled = false
+}
+
+func setFavoriteItems() {
+	if mFavoriteSelector != nil {
+		for i := 0; i < maxMenuItems; i++ {
+			if i < len(myconfig.FavoriteItems) {
+				mFavorites[i].SetTitle(myconfig.FavoriteItems[i].Uri)
+				mFavorites[i].SetTooltip(myconfig.FavoriteItems[i].Uri)
+				mFavorites[i].Show()
+				systrayMenuItemEnable(mFavorites[i])
+			} else {
+				mFavorites[i].Hide()
+			}
+		}
+	}
+}
+
+func activateFavoriteItem(idx int) {
+	if idx < len(myconfig.FavoriteItems) && idx >= 0 {
+		myconfig.Uri = myconfig.FavoriteItems[idx].Uri
+		myconfig.Upn = myconfig.FavoriteItems[idx].Upn
+		myconfig.Secret = myconfig.FavoriteItems[idx].Secret
+		if mWeb != nil {
+			mWeb.SetTitle(msgGotoPortal + myconfig.Uri)
+			mWeb.SetTooltip(msgGotoPortal + myconfig.Uri)
+		}
+	}
 }
 
 func localconfGetAccessesLen() int {
@@ -571,7 +610,20 @@ func checkConnectionStatus() {
 							gtelLogin = OAuthLoginResponse{}
 							telemetryTaskRun()
 							registering = false
+							setConfigFavoriteItem(myconfig.Uri, myconfig.Upn, myconfig.Secret)
+							setFavoriteItems()
 							UpdManagerSetCheck()
+						} else {
+							// there is registering error, check timeout
+							var curTime = time.Now().Add(-time.Second * maxSignInTimeSeconds)
+							if curTime.After(registeringStarted) {
+								registering = false
+								beeep.Notify(
+									"ERROR", "Registration timeout. Please try again.",
+									filepath.FromSlash(execPath+msgLogo))
+								localconf.Accesses = &[]ManagementSimpleUPNResponseAccess{}
+								localconf.Hash = ""
+							}
 						}
 					}
 				} else {
@@ -642,9 +694,16 @@ func onReady() {
 		mLogin = systray.AddMenuItem("Sign-in to Shieldoo", "Sign-in to Shieldoo")
 		systray.AddSeparator()
 		mEditUrl = systray.AddMenuItem("Edit organization name", "Edit organization name")
+		mFavoriteSelector = systray.AddMenuItem("Favorite organizations", "Favorite organizations")
+		mFavorites = []*systray.MenuItem{}
+		for i := 0; i < maxMenuItems; i++ {
+			mFavorites = append(mFavorites, nil)
+			mFavorites[i] = mFavoriteSelector.AddSubMenuItem("", "")
+			mFavorites[i].Hide()
+		}
 		mChecked := systray.AddMenuItemCheckbox("Autostart enabled", "Autostart enabled", autostartApp.IsEnabled())
 		systray.AddSeparator()
-		mWeb := systray.AddMenuItem(msgGotoPortal+myconfig.Uri, msgGotoPortal+myconfig.Uri)
+		mWeb = systray.AddMenuItem(msgGotoPortal+myconfig.Uri, msgGotoPortal+myconfig.Uri)
 		mAccess := systray.AddMenuItem("Devices in mesh which I can access.", "Devices in mesh which I can access.")
 		systray.AddSeparator()
 		mVersion := systray.AddMenuItem("version: "+APPVERSION, "version: "+APPVERSION)
@@ -653,6 +712,7 @@ func onReady() {
 
 		systrayMenuItemDisable(mDisconnect)
 		connectDisable()
+		setFavoriteItems()
 
 		redrawConnectMenu()
 
@@ -711,6 +771,54 @@ func onReady() {
 				connectNebulaUI(22)
 			case <-mConnectSub[23].ClickedCh:
 				connectNebulaUI(23)
+			case <-mFavorites[0].ClickedCh:
+				activateFavoriteItem(0)
+			case <-mFavorites[1].ClickedCh:
+				activateFavoriteItem(1)
+			case <-mFavorites[2].ClickedCh:
+				activateFavoriteItem(2)
+			case <-mFavorites[3].ClickedCh:
+				activateFavoriteItem(3)
+			case <-mFavorites[4].ClickedCh:
+				activateFavoriteItem(4)
+			case <-mFavorites[5].ClickedCh:
+				activateFavoriteItem(5)
+			case <-mFavorites[6].ClickedCh:
+				activateFavoriteItem(6)
+			case <-mFavorites[7].ClickedCh:
+				activateFavoriteItem(7)
+			case <-mFavorites[8].ClickedCh:
+				activateFavoriteItem(8)
+			case <-mFavorites[9].ClickedCh:
+				activateFavoriteItem(9)
+			case <-mFavorites[10].ClickedCh:
+				activateFavoriteItem(10)
+			case <-mFavorites[11].ClickedCh:
+				activateFavoriteItem(11)
+			case <-mFavorites[12].ClickedCh:
+				activateFavoriteItem(12)
+			case <-mFavorites[13].ClickedCh:
+				activateFavoriteItem(13)
+			case <-mFavorites[14].ClickedCh:
+				activateFavoriteItem(14)
+			case <-mFavorites[15].ClickedCh:
+				activateFavoriteItem(15)
+			case <-mFavorites[16].ClickedCh:
+				activateFavoriteItem(16)
+			case <-mFavorites[17].ClickedCh:
+				activateFavoriteItem(17)
+			case <-mFavorites[18].ClickedCh:
+				activateFavoriteItem(18)
+			case <-mFavorites[19].ClickedCh:
+				activateFavoriteItem(19)
+			case <-mFavorites[20].ClickedCh:
+				activateFavoriteItem(20)
+			case <-mFavorites[21].ClickedCh:
+				activateFavoriteItem(21)
+			case <-mFavorites[22].ClickedCh:
+				activateFavoriteItem(22)
+			case <-mFavorites[23].ClickedCh:
+				activateFavoriteItem(23)
 			case <-mDisconnect.ClickedCh:
 				disconnectNebulaUI()
 			case <-mQuit.ClickedCh:
@@ -734,6 +842,7 @@ func onReady() {
 				if myconfig.Uri != "" {
 					registeringCode = GenerateRandomString(64)
 					registering = true
+					registeringStarted = time.Now()
 					localconf.Accesses = &[]ManagementSimpleUPNResponseAccess{}
 					localconf.Hash = ""
 					redrawConnectMenu()
