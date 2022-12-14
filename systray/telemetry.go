@@ -51,6 +51,10 @@ var localconf ManagementSimpleUPNResponse
 
 var gtelLogin OAuthLoginResponse
 
+func telemetryInvalidateToken() {
+	gtelLogin.ValidTo = time.Now().UTC().Add(-1000 * time.Hour)
+}
+
 func telemetryLogin() error {
 	if gtelLogin.ValidTo.UTC().Local().Add(-300 * time.Second).Before(time.Now().UTC()) {
 		uri := myconfig.Uri + "api/oauth/authorizeupn"

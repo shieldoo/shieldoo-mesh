@@ -66,6 +66,7 @@ Var STR_CONTAINS_VAR_2
 Var STR_CONTAINS_VAR_3
 Var STR_CONTAINS_VAR_4
 Var STR_RETURN_VAR
+Var ConfigExists
  
 Function StrContains
   Exch $STR_NEEDLE
@@ -104,6 +105,8 @@ Function .onInit
   ${GetParameters} $R0
   ClearErrors
   ${GetOptions} $R0 /URL= $0
+  IfFileExists $PROFILE\.shieldoo\shieldoo-mesh.yaml 0 +2
+  StrCpy $ConfigExists 1
 FunctionEnd
 
 !insertmacro MUI_PAGE_WELCOME
@@ -117,9 +120,13 @@ Var STR_URL_VAR
 Page custom nsDialogsPage nsDialogsPageLeave
 
 Function nsDialogsPage
+  ${If} $ConfigExists == 1
+    Abort
+  ${EndIf}
 
 	nsDialogs::Create 1018
-	Pop $DialogUrl
+
+  Pop $DialogUrl
 
 	${If} $DialogUrl == error
 		Abort
@@ -245,6 +252,7 @@ ExecWait 'sc failure shieldoo-mesh reset=86400 actions=restart/1000/restart/1000
 ExecWait '"$INSTDIR\shieldoo-mesh-srv.exe" -desktop -service start'
 
 ; set URL for client
+IfFileExists $PROFILE\.shieldoo\shieldoo-mesh.yaml +2 0
 ExecWait '"$INSTDIR\${MAIN_APP_EXE}" -url $STR_URL_VAR'
 
 SectionEnd
