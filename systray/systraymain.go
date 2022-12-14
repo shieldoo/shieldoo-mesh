@@ -88,6 +88,13 @@ const msgConnectWithProfile = "Connect with profile .."
 const msgWaitingForSignin = "shieldoo - waiting for sign-in"
 const msgGotoPortal = "Go to shieldoo portal: "
 
+func msgSignIn() string {
+	orgname := strings.Replace(myconfig.Uri, "https://", "", 1)
+	orgname = strings.Replace(orgname, "http://", "", 1)
+	orgname = strings.Replace(orgname, "/", "", -1)
+	return fmt.Sprintf("Sign-in to Shieldoo (%s)", orgname)
+}
+
 func main() {
 	onExit := func() {
 		// not needed now
@@ -383,16 +390,16 @@ func connectEnable() {
 		if localconfGetAccessesLen() == 1 {
 			mConnectDefault.Show()
 			systrayMenuItemEnable(mConnectDefault)
-			mConnect.SetTitle("")
-			mConnect.SetTooltip("")
-			mConnect.Show()
+			mConnect.Hide()
 			systrayMenuItemDisable(mConnect)
 		} else {
 			mConnectDefault.Hide()
-			mConnect.SetTitle(msgConnectWithProfile)
-			mConnect.SetTooltip(msgConnectWithProfile)
 			mConnect.Show()
-			systrayMenuItemEnable(mConnect)
+			if localconfGetAccessesLen() > 0 {
+				systrayMenuItemEnable(mConnect)
+			} else {
+				systrayMenuItemDisable(mConnect)
+			}
 		}
 	}
 	mConnectEnabled = true
@@ -403,14 +410,10 @@ func connectDisable() {
 		if localconfGetAccessesLen() == 1 {
 			mConnectDefault.Show()
 			systrayMenuItemDisable(mConnectDefault)
-			mConnect.SetTitle("")
-			mConnect.SetTooltip("")
-			mConnect.Show()
+			mConnect.Hide()
 			systrayMenuItemDisable(mConnect)
 		} else {
 			mConnectDefault.Hide()
-			mConnect.SetTitle(msgConnectWithProfile)
-			mConnect.SetTooltip(msgConnectWithProfile)
 			mConnect.Show()
 			systrayMenuItemDisable(mConnect)
 		}
@@ -430,19 +433,50 @@ func setFavoriteItems() {
 				mFavorites[i].Hide()
 			}
 		}
+		if len(myconfig.FavoriteItems) > 1 {
+			mFavoriteSelector.Show()
+		} else {
+			mFavoriteSelector.Hide()
+		}
 	}
 }
 
 func activateFavoriteItem(idx int) {
+	log.Debug("activateFavoriteItem: ", idx)
 	if idx < len(myconfig.FavoriteItems) && idx >= 0 {
+		log.Debug("activateFavoriteItem: ", myconfig.FavoriteItems[idx])
 		myconfig.Uri = myconfig.FavoriteItems[idx].Uri
 		myconfig.Upn = myconfig.FavoriteItems[idx].Upn
 		myconfig.Secret = myconfig.FavoriteItems[idx].Secret
+		localconf.Hash = ""
+		localconf.Accesses = &[]ManagementSimpleUPNResponseAccess{}
+		log.Debug("myconfig: ", myconfig)
 		if mWeb != nil {
 			mWeb.SetTitle(msgGotoPortal + myconfig.Uri)
 			mWeb.SetTooltip(msgGotoPortal + myconfig.Uri)
 		}
+		if mLogin != nil {
+			mLogin.SetTitle(msgSignIn())
+			mLogin.SetTooltip(msgSignIn())
+		}
 		saveClientConf()
+		redrawConnectMenu()
+		connectDisable()
+		if myconfig.Secret != "" {
+			telemetryInvalidateToken()
+			connsucc, err := telemetrySend()
+			if err != nil {
+				log.Error("telemtrySend error: ", err)
+			}
+			if connsucc {
+				redrawConnectMenu()
+				connectEnable()
+			} else {
+				log.Error("telemtrySend failed")
+				myconfig.Secret = ""
+				connectDisable()
+			}
+		}
 	}
 }
 
@@ -692,7 +726,7 @@ func onReady() {
 		mConnectDefault = systray.AddMenuItem("Connect ..", "Connect to mesh")
 		mDisconnect = systray.AddMenuItem("Disconnect..", "Disconnect from mesh")
 		systray.AddSeparator()
-		mLogin = systray.AddMenuItem("Sign-in to Shieldoo", "Sign-in to Shieldoo")
+		mLogin = systray.AddMenuItem(msgSignIn(), msgSignIn())
 		systray.AddSeparator()
 		mEditUrl = systray.AddMenuItem("Edit organization name", "Edit organization name")
 		mFavoriteSelector = systray.AddMenuItem("Favorite organizations", "Favorite organizations")
@@ -834,6 +868,8 @@ func onReady() {
 				inputUri()
 				mWeb.SetTitle(msgGotoPortal + myconfig.Uri)
 				mWeb.SetTooltip(msgGotoPortal + myconfig.Uri)
+				mLogin.SetTitle(msgSignIn())
+				mLogin.SetTooltip(msgSignIn())
 				if prevUri != myconfig.Uri {
 					connectDisable()
 				}
@@ -842,13 +878,15 @@ func onReady() {
 					inputUri()
 					mWeb.SetTitle(msgGotoPortal + myconfig.Uri)
 					mWeb.SetTooltip(msgGotoPortal + myconfig.Uri)
+					mLogin.SetTitle(msgSignIn())
+					mLogin.SetTooltip(msgSignIn())
 				}
 				if myconfig.Uri != "" {
 					registeringCode = GenerateRandomString(64)
-					registering = true
 					registeringStarted = time.Now()
 					localconf.Accesses = &[]ManagementSimpleUPNResponseAccess{}
 					localconf.Hash = ""
+					registering = true
 					redrawConnectMenu()
 					u := myconfig.Uri
 					u += "login?code=" + registeringCode
