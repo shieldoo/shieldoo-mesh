@@ -16,7 +16,7 @@ const (
 	configFileName = "shieldoo-mesh.yaml"
 )
 
-type NebulaClientFavoriteItem struct {
+type NebulaClientFavouriteItem struct {
 	Upn    string `yaml:"-"`
 	Uri    string `yaml:"uri"`
 	Secret string `yaml:"-"`
@@ -28,7 +28,7 @@ type NebulaClientUPNYamlConfig struct {
 	Secret            string                     `yaml:"-"`
 	RestrictedNetwork bool                       `yaml:"-"`
 	ClientID          string                     `yaml:"clientid"`
-	FavoriteItems     []NebulaClientFavoriteItem `yaml:"favoriteitems"`
+	FavouriteItems     []NebulaClientFavouriteItem `yaml:"favouriteitems"`
 }
 
 var myconfig *NebulaClientUPNYamlConfig
@@ -41,8 +41,8 @@ func getConfigDir() string {
 	return GetHomeDir() + mydir
 }
 
-func getConfigFavoriteItem(uri string) *NebulaClientFavoriteItem {
-	for _, v := range myconfig.FavoriteItems {
+func getConfigFavouriteItem(uri string) *NebulaClientFavouriteItem {
+	for _, v := range myconfig.FavouriteItems {
 		if v.Uri == uri {
 			return &v
 		}
@@ -50,21 +50,21 @@ func getConfigFavoriteItem(uri string) *NebulaClientFavoriteItem {
 	return nil
 }
 
-func setConfigFavoriteItem(uri string, upn string, secret string) {
-	for i, v := range myconfig.FavoriteItems {
+func setConfigFavouriteItem(uri string, upn string, secret string) {
+	for i, v := range myconfig.FavouriteItems {
 		if v.Uri == uri {
-			myconfig.FavoriteItems[i].Upn = upn
-			myconfig.FavoriteItems[i].Secret = secret
+			myconfig.FavouriteItems[i].Upn = upn
+			myconfig.FavouriteItems[i].Secret = secret
 			saveClientConf()
 			return
 		}
 	}
-	myconfig.FavoriteItems = append(myconfig.FavoriteItems, NebulaClientFavoriteItem{Uri: uri, Upn: upn, Secret: secret})
-	// sort favorites by Uri
+	myconfig.FavouriteItems = append(myconfig.FavouriteItems, NebulaClientFavouriteItem{Uri: uri, Upn: upn, Secret: secret})
+	// sort favourites by Uri
 	sort.Slice(
-		myconfig.FavoriteItems,
+		myconfig.FavouriteItems,
 		func(i, j int) bool {
-			return myconfig.FavoriteItems[i].Uri < myconfig.FavoriteItems[j].Uri
+			return myconfig.FavouriteItems[i].Uri < myconfig.FavouriteItems[j].Uri
 		})
 	saveClientConf()
 }
