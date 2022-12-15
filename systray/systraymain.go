@@ -237,7 +237,7 @@ func connectNebulaUI(index int) {
 	if mDisconnect != nil {
 		systrayMenuItemEnable(mDisconnect)
 	}
-	connectDisable()
+	connectDisable(false)
 	if mLogin != nil {
 		systrayMenuItemDisable(mLogin)
 	}
@@ -274,7 +274,7 @@ func disconnectNebulaUI() {
 	if mDisconnect != nil {
 		systrayMenuItemDisable(mDisconnect)
 	}
-	connectEnable()
+	connectEnable(false)
 	if mLogin != nil {
 		systrayMenuItemEnable(mLogin)
 	}
@@ -366,11 +366,6 @@ func telemetryTask() {
 }
 
 func redrawConnectMenu() {
-	if mConnectEnabled {
-		connectEnable()
-	} else {
-		connectDisable()
-	}
 	if localconf.Accesses != nil && mConnectSub != nil {
 		for i := 0; i < maxMenuItems; i++ {
 			if i < len(*localconf.Accesses) && localconfGetAccessesLen() != 1 {
@@ -383,10 +378,15 @@ func redrawConnectMenu() {
 			}
 		}
 	}
+	if mConnectEnabled {
+		connectEnable(true)
+	} else {
+		connectDisable(true)
+	}
 }
 
-func connectEnable() {
-	if !mConnectEnabled && mConnectDefault != nil && mConnect != nil {
+func connectEnable(force bool) {
+	if (!mConnectEnabled || force) && mConnectDefault != nil && mConnect != nil {
 		if localconfGetAccessesLen() == 1 {
 			mConnectDefault.Show()
 			systrayMenuItemEnable(mConnectDefault)
@@ -405,8 +405,8 @@ func connectEnable() {
 	mConnectEnabled = true
 }
 
-func connectDisable() {
-	if mConnectEnabled && mConnectDefault != nil && mConnect != nil {
+func connectDisable(force bool) {
+	if (mConnectEnabled || force) && mConnectDefault != nil && mConnect != nil {
 		if localconfGetAccessesLen() == 1 {
 			mConnectDefault.Show()
 			systrayMenuItemDisable(mConnectDefault)
@@ -460,8 +460,8 @@ func activateFavouriteItem(idx int) {
 			mLogin.SetTooltip(msgSignIn())
 		}
 		saveClientConf()
+		connectDisable(false)
 		redrawConnectMenu()
-		connectDisable()
 		if myconfig.Secret != "" {
 			telemetryInvalidateToken()
 			connsucc, err := telemetrySend()
@@ -469,12 +469,12 @@ func activateFavouriteItem(idx int) {
 				log.Error("telemtrySend error: ", err)
 			}
 			if connsucc {
+				log.Debug("telemtrySend success")
+				connectEnable(false)
 				redrawConnectMenu()
-				connectEnable()
 			} else {
 				log.Error("telemtrySend failed")
 				myconfig.Secret = ""
-				connectDisable()
 			}
 		}
 	}
@@ -641,7 +641,7 @@ func checkConnectionStatus() {
 							myconfig.Secret = _secret
 							myconfig.Upn = _upn
 							log.Debug("received secret: ", myconfig.Secret)
-							connectDisable()
+							connectDisable(false)
 							gtelLogin = OAuthLoginResponse{}
 							telemetryTaskRun()
 							registering = false
@@ -665,7 +665,7 @@ func checkConnectionStatus() {
 					if myconfig.Secret != "" {
 						systraySetTemplateIcon(icon.IconSigned)
 						systraySetToolTip(msgDisconnected)
-						connectEnable()
+						connectEnable(false)
 					} else {
 						systraySetTemplateIcon(icon.IconWaitForSignIn)
 						systraySetToolTip(msgWaitingForSignin)
@@ -746,7 +746,7 @@ func onReady() {
 		systrayMenuItemDisable(mVersion)
 
 		systrayMenuItemDisable(mDisconnect)
-		connectDisable()
+		connectDisable(false)
 		setFavouriteItems()
 
 		redrawConnectMenu()
@@ -871,7 +871,7 @@ func onReady() {
 				mLogin.SetTitle(msgSignIn())
 				mLogin.SetTooltip(msgSignIn())
 				if prevUri != myconfig.Uri {
-					connectDisable()
+					connectDisable(false)
 				}
 			case <-mLogin.ClickedCh:
 				if myconfig.Uri == "" {
