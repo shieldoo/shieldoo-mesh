@@ -113,6 +113,7 @@ func telemetrySend() (ret bool, err error) {
 			ClientVersion: APPVERSION,
 		}
 		jsonReq, _ := json.Marshal(request)
+		log.Debug("jsonReq: ", string(jsonReq))
 
 		req, _ := http.NewRequest("POST", uri, bytes.NewBuffer(jsonReq))
 		req.Header.Set("Authorization", "Bearer "+gtelLogin.JWTToken)
@@ -134,6 +135,7 @@ func telemetrySend() (ret bool, err error) {
 		if err != nil {
 			panic(err)
 		}
+		log.Debug("body: ", string(bodyBytes))
 		resp := ManagementSimpleUPNResponse{}
 		err = json.Unmarshal(bodyBytes, &resp)
 		if err != nil {
@@ -141,6 +143,7 @@ func telemetrySend() (ret bool, err error) {
 		}
 		if resp.Hash != localconf.Hash {
 			log.Info("new config data")
+			log.Debug("new config data: ", resp)
 			localconf = resp
 			ret = true
 		}
