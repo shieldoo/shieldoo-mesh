@@ -181,7 +181,11 @@ rm out/shieldoo-mesh-srv-amd64 out/shieldoo-mesh-srv-arm64
 ### build systray app
 
 #### linux
+
 `env GOOS=linux GOARCH=amd64 go build -tags=legacy_appindicator -o out/shieldoo-mesh-app ./systray`
+
+apple twwek:
+docker run -it --platform=linux/amd64 -v ~/go/src/github.com/shieldoo/shieldoo-mesh:/go/src/github.com/shieldoo/shieldoo-mesh go
 
 #### apple
 
