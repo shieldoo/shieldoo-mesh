@@ -84,9 +84,8 @@ func init() {
 // messages
 const msgDisconnected = "shieldoo - disconnected"
 const msgLogo = "/logo.png"
-const msgConnectWithProfile = "Connect with profile .."
-const msgWaitingForSignin = "shieldoo - waiting for sign-in"
-const msgGotoPortal = "Go to shieldoo portal: "
+const msgConnectWithProfile = "Connect with profile"
+const msgWaitingForSignIn = "shieldoo - waiting for sign-in"
 
 func msgSignIn() string {
 	orgname := strings.Replace(myconfig.Uri, "https://", "", 1)
@@ -169,7 +168,7 @@ func main() {
 		}
 	}
 
-	// updadte check
+	// update check
 	go UpdManagerRun()
 
 	systray.Run(onReady, onExit)
@@ -180,7 +179,6 @@ const maxSignInTimeSeconds = 300
 var mConnectEnabled bool = true
 var mUpdate *systray.MenuItem = nil
 var mConnect *systray.MenuItem = nil
-var mWeb *systray.MenuItem = nil
 var mFavouriteSelector *systray.MenuItem = nil
 var mConnectDefault *systray.MenuItem = nil
 var mLogin *systray.MenuItem = nil
@@ -227,7 +225,7 @@ func systraySetTemplateIcon(buf []byte) {
 	}
 }
 
-func connectNebulaUIDefult() {
+func connectNebulaUIDefault() {
 	if localconfGetAccessesLen() == 1 {
 		connectNebulaUI(0)
 	}
@@ -451,10 +449,6 @@ func activateFavouriteItem(idx int) {
 		localconf.Hash = ""
 		localconf.Accesses = &[]ManagementSimpleUPNResponseAccess{}
 		log.Debug("myconfig: ", myconfig)
-		if mWeb != nil {
-			mWeb.SetTitle(msgGotoPortal + myconfig.Uri)
-			mWeb.SetTooltip(msgGotoPortal + myconfig.Uri)
-		}
 		if mLogin != nil {
 			mLogin.SetTitle(msgSignIn())
 			mLogin.SetTooltip(msgSignIn())
@@ -542,7 +536,7 @@ func checkConnectionStatus() {
 		if e == nil {
 			if myconfig.Secret == "" {
 				systraySetTemplateIcon(icon.IconWaitForSignIn)
-				systraySetToolTip(msgWaitingForSignin)
+				systraySetToolTip(msgWaitingForSignIn)
 			} else {
 				if !running && r.IsRunning {
 					connectNebulaUI(0)
@@ -668,7 +662,7 @@ func checkConnectionStatus() {
 						connectEnable(false)
 					} else {
 						systraySetTemplateIcon(icon.IconWaitForSignIn)
-						systraySetToolTip(msgWaitingForSignin)
+						systraySetToolTip(msgWaitingForSignIn)
 					}
 				}
 			}
@@ -700,19 +694,19 @@ func inputUri() {
 
 func onReady() {
 	systraySetTemplateIcon(icon.IconWaitForSignIn)
-	systraySetToolTip(msgWaitingForSignin)
+	systraySetToolTip(msgWaitingForSignIn)
 	systray.SetTitle("")
 
 	// We can manipulate the systray in other goroutines
 	go func() {
 		systraySetTemplateIcon(icon.IconWaitForSignIn)
-		systraySetToolTip(msgWaitingForSignin)
+		systraySetToolTip(msgWaitingForSignIn)
 		systray.SetTitle("")
 
 		// enable autostart config
 		initAutostartApp()
 
-		mUpdate = systray.AddMenuItem("Update Shieldoo client ..", "Update Shieldoo client ..")
+		mUpdate = systray.AddMenuItem("Update Shieldoo client", "Update Shieldoo client")
 		mUpdate.Hide()
 		UpdManagerInitMenuItem(mUpdate)
 
@@ -723,8 +717,8 @@ func onReady() {
 			mConnectSub[i] = mConnect.AddSubMenuItem("", "")
 			mConnectSub[i].Hide()
 		}
-		mConnectDefault = systray.AddMenuItem("Connect ..", "Connect to mesh")
-		mDisconnect = systray.AddMenuItem("Disconnect..", "Disconnect from mesh")
+		mConnectDefault = systray.AddMenuItem("Connect", "Connect to mesh")
+		mDisconnect = systray.AddMenuItem("Disconnect", "Disconnect from mesh")
 		systray.AddSeparator()
 		mLogin = systray.AddMenuItem(msgSignIn(), msgSignIn())
 		systray.AddSeparator()
@@ -738,10 +732,9 @@ func onReady() {
 		}
 		mChecked := systray.AddMenuItemCheckbox("Autostart enabled", "Autostart enabled", autostartApp.IsEnabled())
 		systray.AddSeparator()
-		mWeb = systray.AddMenuItem(msgGotoPortal+myconfig.Uri, msgGotoPortal+myconfig.Uri)
-		mAccess := systray.AddMenuItem("Devices in mesh which I can access.", "Devices in mesh which I can access.")
+		mAccess := systray.AddMenuItem("My Access Rights in Shieldoo network", "My Access Rights in Shieldoo network")
 		systray.AddSeparator()
-		mVersion := systray.AddMenuItem("version: "+APPVERSION, "version: "+APPVERSION)
+		mVersion := systray.AddMenuItem("Version: "+APPVERSION, "Version: "+APPVERSION)
 		mQuit := systray.AddMenuItem("Quit", "Quit the whole app")
 		systrayMenuItemDisable(mVersion)
 
@@ -756,7 +749,7 @@ func onReady() {
 		for {
 			select {
 			case <-mConnectDefault.ClickedCh:
-				connectNebulaUIDefult()
+				connectNebulaUIDefault()
 			// UGLY !!!
 			case <-mConnectSub[0].ClickedCh:
 				connectNebulaUI(0)
@@ -861,13 +854,11 @@ func onReady() {
 					disconnectNebulaUI()
 				}
 				systray.Quit()
-				fmt.Println("Quit now..")
+				fmt.Println("Quit now")
 				return
 			case <-mEditUrl.ClickedCh:
 				prevUri := myconfig.Uri
 				inputUri()
-				mWeb.SetTitle(msgGotoPortal + myconfig.Uri)
-				mWeb.SetTooltip(msgGotoPortal + myconfig.Uri)
 				mLogin.SetTitle(msgSignIn())
 				mLogin.SetTooltip(msgSignIn())
 				if prevUri != myconfig.Uri {
@@ -876,8 +867,6 @@ func onReady() {
 			case <-mLogin.ClickedCh:
 				if myconfig.Uri == "" {
 					inputUri()
-					mWeb.SetTitle(msgGotoPortal + myconfig.Uri)
-					mWeb.SetTooltip(msgGotoPortal + myconfig.Uri)
 					mLogin.SetTitle(msgSignIn())
 					mLogin.SetTooltip(msgSignIn())
 				}
@@ -892,8 +881,6 @@ func onReady() {
 					u += "login?code=" + registeringCode
 					open.Run(u)
 				}
-			case <-mWeb.ClickedCh:
-				open.Run(myconfig.Uri)
 			case <-mUpdate.ClickedCh:
 				open.Run(myconfig.Uri + "connect-me")
 			case <-mAccess.ClickedCh:
