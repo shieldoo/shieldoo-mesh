@@ -19,6 +19,7 @@ func (p *program) Start(s service.Service) error {
 		go DeskserviceStart(true)
 	} else {
 		go SvcConnectionStart(true)
+		go ServiceCheckPinger()
 	}
 	return nil
 }
@@ -28,6 +29,7 @@ func (p *program) Stop(s service.Service) error {
 	if systemsvcIsDesktop {
 		DeskserviceStop()
 	} else {
+		ServiceCheckPingerStop()
 		SvcConnectionStop()
 	}
 	return nil

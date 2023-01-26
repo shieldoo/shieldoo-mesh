@@ -138,6 +138,7 @@ func main() {
 	if *desktopFlag {
 		DeskserviceStart(false)
 	} else {
+		go ServiceCheckPinger()
 		SvcConnectionStart(false)
 	}
 }
