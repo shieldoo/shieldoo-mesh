@@ -181,7 +181,7 @@ var mUpdate *systray.MenuItem = nil
 var mConnect *systray.MenuItem = nil
 var mFavouriteSelector *systray.MenuItem = nil
 var mConnectDefault *systray.MenuItem = nil
-var mLogin *systray.MenuItem = nil
+var mSignIn *systray.MenuItem = nil
 var mEditUrl *systray.MenuItem = nil
 var mConnectSub []*systray.MenuItem = nil
 var mFavourites []*systray.MenuItem = nil
@@ -226,7 +226,7 @@ func systraySetTemplateIcon(buf []byte) {
 }
 
 func connectNebulaUIDefault() {
-	if localconfGetAccessesLen() == 1 {
+	if mConnectEnabled && localconfGetAccessesLen() == 1 {
 		connectNebulaUI(0)
 	}
 }
@@ -236,8 +236,8 @@ func connectNebulaUI(index int) {
 		systrayMenuItemEnable(mDisconnect)
 	}
 	connectDisable(false)
-	if mLogin != nil {
-		systrayMenuItemDisable(mLogin)
+	if mSignIn != nil {
+		systrayMenuItemDisable(mSignIn)
 	}
 	if mEditUrl != nil {
 		systrayMenuItemDisable(mEditUrl)
@@ -273,8 +273,8 @@ func disconnectNebulaUI() {
 		systrayMenuItemDisable(mDisconnect)
 	}
 	connectEnable(false)
-	if mLogin != nil {
-		systrayMenuItemEnable(mLogin)
+	if mSignIn != nil {
+		systrayMenuItemEnable(mSignIn)
 	}
 	if mEditUrl != nil {
 		systrayMenuItemEnable(mEditUrl)
@@ -449,9 +449,9 @@ func activateFavouriteItem(idx int) {
 		localconf.Hash = ""
 		localconf.Accesses = &[]ManagementSimpleUPNResponseAccess{}
 		log.Debug("myconfig: ", myconfig)
-		if mLogin != nil {
-			mLogin.SetTitle(msgSignIn())
-			mLogin.SetTooltip(msgSignIn())
+		if mSignIn != nil {
+			mSignIn.SetTitle(msgSignIn())
+			mSignIn.SetTooltip(msgSignIn())
 		}
 		saveClientConf()
 		connectDisable(false)
@@ -460,14 +460,16 @@ func activateFavouriteItem(idx int) {
 			telemetryInvalidateToken()
 			connsucc, err := telemetrySend()
 			if err != nil {
-				log.Error("telemtrySend error: ", err)
+				log.Error("telemetrySend error: ", err)
 			}
 			if connsucc {
-				log.Debug("telemtrySend success")
+				log.Debug("telemetrySend success")
 				connectEnable(false)
 				redrawConnectMenu()
+				// if there is only one connection, connect to it
+				connectNebulaUIDefault()
 			} else {
-				log.Error("telemtrySend failed")
+				log.Error("telemetrySend failed")
 				myconfig.Secret = ""
 			}
 		}
@@ -632,16 +634,20 @@ func checkConnectionStatus() {
 					if errConnI {
 						// try to register
 						if _secret, _upn, _, _, err := registerToServer(); err == nil {
+							log.Info("sign-in success")
 							myconfig.Secret = _secret
 							myconfig.Upn = _upn
 							log.Debug("received secret: ", myconfig.Secret)
 							connectDisable(false)
 							gtelLogin = OAuthLoginResponse{}
-							telemetryTaskRun()
 							registering = false
 							setConfigFavouriteItem(myconfig.Uri, myconfig.Upn, myconfig.Secret)
 							setFavouriteItems()
+							telemetryTaskRun()
 							UpdManagerSetCheck()
+							// we are signed in, connect to mesh if we have only one access
+							connectEnable(false)
+							connectNebulaUIDefault()
 						} else {
 							// there is registering error, check timeout
 							var curTime = time.Now().Add(-time.Second * maxSignInTimeSeconds)
@@ -720,7 +726,7 @@ func onReady() {
 		mConnectDefault = systray.AddMenuItem("Connect", "Connect to mesh")
 		mDisconnect = systray.AddMenuItem("Disconnect", "Disconnect from mesh")
 		systray.AddSeparator()
-		mLogin = systray.AddMenuItem(msgSignIn(), msgSignIn())
+		mSignIn = systray.AddMenuItem(msgSignIn(), msgSignIn())
 		systray.AddSeparator()
 		mEditUrl = systray.AddMenuItem("Edit organization name", "Edit organization name")
 		mFavouriteSelector = systray.AddMenuItem("Favourite organizations", "Favourite organizations")
@@ -859,16 +865,16 @@ func onReady() {
 			case <-mEditUrl.ClickedCh:
 				prevUri := myconfig.Uri
 				inputUri()
-				mLogin.SetTitle(msgSignIn())
-				mLogin.SetTooltip(msgSignIn())
+				mSignIn.SetTitle(msgSignIn())
+				mSignIn.SetTooltip(msgSignIn())
 				if prevUri != myconfig.Uri {
 					connectDisable(false)
 				}
-			case <-mLogin.ClickedCh:
+			case <-mSignIn.ClickedCh:
 				if myconfig.Uri == "" {
 					inputUri()
-					mLogin.SetTitle(msgSignIn())
-					mLogin.SetTooltip(msgSignIn())
+					mSignIn.SetTitle(msgSignIn())
+					mSignIn.SetTooltip(msgSignIn())
 				}
 				if myconfig.Uri != "" {
 					registeringCode = GenerateRandomString(64)
