@@ -141,7 +141,7 @@ func main() {
 	}
 	log.SetLevel(logrus.DebugLevel)
 	log.Info("Starting ..")
-	log.Info("Version: ", APPVERSION)
+	log.Info("build version: ", APPVERSION)
 	log.Debug("Debug mode enabled")
 
 	InitConfig()
