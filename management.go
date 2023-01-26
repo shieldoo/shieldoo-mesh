@@ -66,9 +66,6 @@ func telemetryProcessChanges(cfg *ManagementResponseConfig) {
 	// save configs and certs
 	localconf.ConfigHash = cfg.ConfigData.Hash
 	localconf.ConfigData = cfg
-	if !myconfig.RunAsDeskServiceRPC {
-		myconfig.RestrictedNetwork = cfg.NebulaRestrictiveNetwork
-	}
 	localconf.Loaded = true
 }
 
