@@ -115,4 +115,5 @@ func (hook *EventLogHook) Levels() []logrus.Level {
 }
 
 func DetachOsProcess(cmd *exec.Cmd) {
+	// Do nothing because it is not needed for windows
 }
