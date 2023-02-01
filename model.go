@@ -13,7 +13,9 @@ type NebulaClientYamlConfig struct {
 	RunAsDeskServiceRPC bool   `yaml:"-"`
 	RestrictedNetwork   bool   `yaml:"-"`
 	RPCClientID         string `yaml:"-"`
-	WindowsFW           bool   `yaml:"-"` //windows firewall
+	WindowsFW           bool   `yaml:"-"`                 //windows firewall
+	AutoUpdate          bool   `yaml:"-"`                 // autoupdate enabled
+	AutoUpdateChannel   string `yaml:"autoupdatechannel"` // autoupdate channel
 }
 
 type NebulaLocalYamlConfig struct {
@@ -61,6 +63,7 @@ type ManagementResponseConfig struct {
 	ConfigData                ManagementResponseConfigData `json:"config"`
 	NebulaPunchBack           bool                         `json:"nebulapunchback"`
 	NebulaRestrictiveNetwork  bool                         `json:"nebularestrictivenetwork"`
+	Autoupdate                bool                         `json:"autoupdate"`
 	WebSocketUrl              string                       `json:"websocketurl"`
 	WebSocketIPs              []string                     `json:"websocketips"`
 	WebSocketUsernamePassword string                       `json:"websocketusernamepassword"`

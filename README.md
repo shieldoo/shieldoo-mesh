@@ -148,16 +148,19 @@ sudo apt-get install --no-install-recommends -y nsis nsis-doc nsis-pluginapi
 ```
 
 build:
-`env GOOS=linux GOARCH=amd64 go build -o out/shieldoo-mesh-srv`
+```bash
+env GOOS=linux GOARCH=amd64 go build -ldflags "-X main.APPVERSION=0.0.0 -X main.ARCHITECTURE=amd64" -o out/shieldoo-mesh-srv
+env GOOS=linux GOARCH=arm GOARM=7 go build -ldflags "-X main.APPVERSION=0.0.0 -X main.ARCHITECTURE=arm7" -o out/shieldoo-mesh-srv-arm7
+```
 
 #### apple
 
 ```bash
 #darwin-arm64 (apple silicon)
-env GOOS=darwin GOARCH=arm64 go build -o out/shieldoo-mesh-srv-arm64
+env GOOS=darwin GOARCH=arm64 go build -ldflags "-X main.APPVERSION=0.0.0 -X main.ARCHITECTURE=x64" -o out/shieldoo-mesh-srv-arm64
 
 #darwin-amd64 (intel)
-env GOOS=darwin GOARCH=amd64 go build -o out/shieldoo-mesh-srv-amd64
+env GOOS=darwin GOARCH=amd64 go build -ldflags "-X main.APPVERSION=0.0.0 -X main.ARCHITECTURE=x64" -o out/shieldoo-mesh-srv-amd64
 
 #build universal binary
 lipo -create -output out/shieldoo-mesh-srv out/shieldoo-mesh-srv-amd64 out/shieldoo-mesh-srv-arm64
@@ -165,7 +168,7 @@ rm out/shieldoo-mesh-srv-amd64 out/shieldoo-mesh-srv-arm64
 ```
 
 #### windows
-`env GOOS=windows GOARCH=amd64 go build -o out/shieldoo-mesh-srv.exe`
+`env GOOS=windows GOARCH=amd64 go build -ldflags "-X main.APPVERSION=0.0.0 -X main.ARCHITECTURE=amd64" -o out/shieldoo-mesh-srv.exe`
 
 ### build testcli
 
@@ -182,7 +185,7 @@ rm out/shieldoo-mesh-srv-amd64 out/shieldoo-mesh-srv-arm64
 
 #### linux
 
-`env GOOS=linux GOARCH=amd64 go build -tags=legacy_appindicator -o out/shieldoo-mesh-app ./systray`
+`env GOOS=linux GOARCH=amd64 go build -tags=legacy_appindicator -ldflags "-X main.APPVERSION=0.0.0 -X main.ARCHITECTURE=amd64" -o out/shieldoo-mesh-app ./systray`
 
 apple twwek:
 docker run -it --platform=linux/amd64 -v ~/go/src/github.com/shieldoo/shieldoo-mesh:/go/src/github.com/shieldoo/shieldoo-mesh go
@@ -193,10 +196,10 @@ Simpliest way to build - MACOSX machine with XCODE installed:
 
 ```bash
 #darwin-arm64 (apple silicon)
-CGO_ENABLED=1 GOOS=darwin GOARCH=arm64 SDKROOT=$(xcrun --sdk macosx --show-sdk-path)  go build -o out/shieldoo-mesh-app-arm64 ./systray
+CGO_ENABLED=1 GOOS=darwin GOARCH=arm64 SDKROOT=$(xcrun --sdk macosx --show-sdk-path)  go build -ldflags "-X main.APPVERSION=0.0.0 -X main.ARCHITECTURE=x64" -o out/shieldoo-mesh-app-arm64 ./systray
 
 #darwin-amd64 (intel)
-CGO_ENABLED=1 GOOS=darwin GOARCH=amd64 SDKROOT=$(xcrun --sdk macosx --show-sdk-path)  go build -o out/shieldoo-mesh-app-amd64 ./systray
+CGO_ENABLED=1 GOOS=darwin GOARCH=amd64 SDKROOT=$(xcrun --sdk macosx --show-sdk-path)  go build -ldflags "-X main.APPVERSION=0.0.0 -X main.ARCHITECTURE=amd64" -o out/shieldoo-mesh-app-amd64 ./systray
 
 #build universal binary
 lipo -create -output out/shieldoo-mesh-app out/shieldoo-mesh-app-amd64 out/shieldoo-mesh-app-arm64
@@ -214,7 +217,7 @@ go-winres simply --icon ../install/windows/logo.png
 
 build:
 
-`env GOOS=windows GOARCH=amd64 CGO_ENABLED=1 CC=x86_64-w64-mingw32-gcc go build -ldflags -H=windowsgui -o out/shieldoo-mesh-app.exe ./systray`
+`env GOOS=windows GOARCH=amd64 CGO_ENABLED=1 CC=x86_64-w64-mingw32-gcc go build -ldflags "-H=windowsgui -X main.APPVERSION=$MYTAG -X main.ARCHITECTURE=amd64" -o out/shieldoo-mesh-app.exe ./systray`
 
 ### build windows MSI packages
 

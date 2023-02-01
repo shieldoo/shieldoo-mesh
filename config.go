@@ -89,6 +89,9 @@ func InitConfig(isDesktop bool) {
 	if myconfig.LocalUDPPort == 0 {
 		myconfig.LocalUDPPort = 24242
 	}
+	if myconfig.AutoUpdateChannel != "latest" && myconfig.AutoUpdateChannel != "beta" {
+		myconfig.AutoUpdateChannel = "latest"
+	}
 }
 
 func removeLocalConf() {

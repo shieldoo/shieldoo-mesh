@@ -1,5 +1,10 @@
 package main
 
-var APPVERSION string = "#APPVERSION#"
-
-// app version
+// A version string that can be set with
+//
+//	-ldflags "-X main.APPVERSION=SOMEVERSION"
+//	-ldflags "-X main.ARCHITECTURE=SOMEARCH"
+//
+// at compile-time.
+var APPVERSION string
+var ARCHITECTURE string

@@ -4,6 +4,12 @@
 sudo chgrp -R staff /Applications/Shieldoo\ Mesh.app
 
 loop="true"
+# if exists unatendent installation file
+if [ -f /Library/Preferences/ShieldooMesh/unattended-install ]; then
+    # run unatendent installation file
+    sudo rm -f /Library/Preferences/ShieldooMesh/unattended-install
+    loop="false"
+fi
 while [ $loop == "true" ]
 do
     mydata=$(osascript -e 'set T to text returned of (display dialog "Please enter a CONFIGURATION DATA to your Shieldoo Mesh" default answer "\r\r\r\r\r\r\r\r" with icon caution  buttons {"Cancel", "OK"} default button "OK")')

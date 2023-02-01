@@ -6,6 +6,8 @@ package main
 import (
 	"net"
 	"os"
+	"os/exec"
+	"syscall"
 
 	"github.com/sirupsen/logrus"
 )
@@ -45,4 +47,10 @@ func HookLogerInit() {
 
 func HookLogerClose() {
 	// Do nothing because it is not needed for linux
+}
+
+func DetachOsProcess(cmd *exec.Cmd) {
+	cmd.SysProcAttr = &syscall.SysProcAttr{
+		Setpgid: true,
+	}
 }
