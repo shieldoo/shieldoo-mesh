@@ -20,6 +20,7 @@ func (p *program) Start(s service.Service) error {
 	} else {
 		go SvcConnectionStart(true)
 		go ServiceCheckPinger()
+		go ServiceUpdaterStart()
 	}
 	return nil
 }
@@ -30,6 +31,7 @@ func (p *program) Stop(s service.Service) error {
 		DeskserviceStop()
 	} else {
 		ServiceCheckPingerStop()
+		ServiceUpdaterStop()
 		SvcConnectionStop()
 	}
 	return nil

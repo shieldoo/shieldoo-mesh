@@ -113,3 +113,7 @@ func (hook *EventLogHook) Fire(entry *logrus.Entry) error {
 func (hook *EventLogHook) Levels() []logrus.Level {
 	return logrus.AllLevels
 }
+
+func DetachOsProcess(cmd *exec.Cmd) {
+	// Do nothing because it is not needed for windows
+}

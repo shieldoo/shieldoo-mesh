@@ -40,6 +40,7 @@ func telemetryLogin() error {
 		response, err := http.Post(uri, "application/json; charset=utf-8", bytes.NewBuffer(jsonReq))
 		if err != nil {
 			log.Error("Login error - post: ", err)
+			time.Sleep(1000 * time.Millisecond)
 			return err
 		}
 		log.Debug("Login http status: ", response.Status)
@@ -67,6 +68,7 @@ func telemetryProcessChanges(cfg *ManagementResponseConfig) {
 	localconf.ConfigHash = cfg.ConfigData.Hash
 	localconf.ConfigData = cfg
 	localconf.Loaded = true
+	myconfig.AutoUpdate = cfg.Autoupdate
 }
 
 func telemetryCollectLogData() string {

@@ -77,12 +77,12 @@ func main() {
 
 	//exception to running app without argument
 	if *serviceFlag == "" && !(*debugFlag || *printVersion || *flagH || *runFlag) {
-		fmt.Printf("Version: %v\n", APPVERSION)
+		fmt.Printf("Version: %v / %v\n", APPVERSION, ARCHITECTURE)
 		os.Exit(0)
 	}
 
 	if *printVersion {
-		fmt.Printf("Version: %v\n", APPVERSION)
+		fmt.Printf("Version: %v / %v\n", APPVERSION, ARCHITECTURE)
 		os.Exit(0)
 	}
 
@@ -126,6 +126,7 @@ func main() {
 	SvcCleanupDNS()
 
 	if *serviceFlag != "" {
+		// start service
 		err := SystemSvcDo(*serviceFlag, *desktopFlag, *debugFlag)
 		if *serviceFlag == "uninstall" || *serviceFlag == "stop" || err == nil {
 			os.Exit(0)
@@ -134,7 +135,7 @@ func main() {
 		}
 	}
 
-	// start desktop service or standard server service
+	// start desktop service or standard server service in CLI mode
 	if *desktopFlag {
 		DeskserviceStart(false)
 	} else {
