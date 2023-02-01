@@ -15,7 +15,7 @@ import (
 )
 
 var serviceupdaterQuit chan bool
-var SERVICEUPDATER_INTERVAL int = 10 // 10 minutes
+var SERVICEUPDATER_INTERVAL int = 30*60 // 30 minutes
 
 // download version file from server
 func serviceupdaterDownloadVersion() (string, error) {
@@ -105,6 +105,9 @@ func serviceupdaterDownloadInstall() (string, string, error) {
 }
 
 // linux install
+// on linux we have problem with systemd, systemd during shutdown kills all processes
+// in process group so we need to run installation process detached from current process.
+// we use at command for this purpose
 func serviceupdaterInstallLinux(fpath string) error {
 	log.Debug("serviceupdaterInstallLinux ..")
 	// create  install script
@@ -118,7 +121,7 @@ func serviceupdaterInstallLinux(fpath string) error {
 		"ENDMAKER\n"
 	err := ioutil.WriteFile(scriptname1, []byte(script1), 0755)
 	if err != nil {
-		log.Error("serviceupdaterInstallLinux - cannot create script2: ", err)
+		log.Error("serviceupdaterInstallLinux - cannot create script1: ", err)
 		return err
 	}
 	// stop service, unpack and reinstall
@@ -132,13 +135,31 @@ func serviceupdaterInstallLinux(fpath string) error {
 	return nil
 }
 
-// windows install
+// windows install del "C:\Program Files\Shieldoo Mesh\shieldoo-mesh-srv.exe"
+// on windows we are using standard application installer
 func serviceupdaterInstallWindows(fpath string) error {
 	log.Debug("serviceupdaterInstallWindows ..")
+	scriptname1 := fpath + ".1.cmd"
+	script1 := "net stop shieldoo-mesh\r\n" +
+		"del \"C:\\Program Files\\Shieldoo Mesh\\shieldoo-mesh-srv.exe\"\r\n" +
+		fpath + " /S\r\n"
+	err := ioutil.WriteFile(scriptname1, []byte(script1), 0755)
+	if err != nil {
+		log.Error("serviceupdaterInstallWindows - cannot create script1: ", err)
+		return err
+	}
+	log.Info("serviceupdaterInstallWindows - running installer ..")
+	cmd := exec.Command("cmd.exe", "/C", "start", "/B", scriptname1)
+	DetachOsProcess(cmd)
+	err = cmd.Start()
+	if err != nil {
+		log.Error("serviceupdaterInstallWindows - cannot run installer: ", err)
+	}
 	return nil
 }
 
 // darwin install
+// on darwin we are using standard system installer
 func serviceupdaterInstallDarwin(fpath string) error {
 	log.Debug("serviceupdaterInstallDarwin ..")
 
