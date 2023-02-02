@@ -15,7 +15,6 @@ import (
 )
 
 var serviceupdaterQuit chan bool
-var SERVICEUPDATER_INTERVAL int = 30*60 // 30 minutes
 
 // download version file from server
 func serviceupdaterDownloadVersion() (string, error) {
@@ -231,7 +230,8 @@ func serviceupdaterCheck() {
 }
 
 func ServiceUpdaterStart() {
-	log.Info("Service updater starting.")
+	log.Info("Service updater starting with interval: ", myconfig.AutoUpdateIntervalMinutes, " minutes")
+	log.Info("Service updater starting with channel: ", myconfig.AutoUpdateChannel)
 	serviceupdaterQuit = make(chan bool)
 
 	for {
@@ -240,7 +240,7 @@ func ServiceUpdaterStart() {
 			log.Debug("Service updater quitting ..")
 			serviceupdaterQuit = nil
 			return
-		case <-time.After(time.Duration(SERVICEUPDATER_INTERVAL) * time.Second):
+		case <-time.After(time.Duration(myconfig.AutoUpdateIntervalMinutes) * time.Second * 60):
 			if myconfig.AutoUpdate {
 				serviceupdaterCheck()
 			}
