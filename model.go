@@ -3,19 +3,20 @@ package main
 import "time"
 
 type NebulaClientYamlConfig struct {
-	AccessId            int    `yaml:"accessid"`
-	PublicIP            string `yaml:"publicip"`
-	Uri                 string `yaml:"uri"`
-	Secret              string `yaml:"secret"`
-	Debug               bool   `yaml:"debug"`
-	SendInterval        int    `yaml:"sendinterval"`
-	LocalUDPPort        int    `yaml:"localudpport"`
-	RunAsDeskServiceRPC bool   `yaml:"-"`
-	RestrictedNetwork   bool   `yaml:"-"`
-	RPCClientID         string `yaml:"-"`
-	WindowsFW           bool   `yaml:"-"`                 //windows firewall
-	AutoUpdate          bool   `yaml:"-"`                 // autoupdate enabled
-	AutoUpdateChannel   string `yaml:"autoupdatechannel"` // autoupdate channel
+	AccessId                  int    `yaml:"accessid"`
+	PublicIP                  string `yaml:"publicip"`
+	Uri                       string `yaml:"uri"`
+	Secret                    string `yaml:"secret"`
+	Debug                     bool   `yaml:"debug"`
+	SendInterval              int    `yaml:"sendinterval"`
+	LocalUDPPort              int    `yaml:"localudpport"`
+	RunAsDeskServiceRPC       bool   `yaml:"-"`
+	RestrictedNetwork         bool   `yaml:"-"`
+	RPCClientID               string `yaml:"-"`
+	WindowsFW                 bool   `yaml:"-"`                         //windows firewall
+	AutoUpdate                bool   `yaml:"-"`                         // autoupdate enabled
+	AutoUpdateIntervalMinutes int64  `yaml:"autoupdateintervalminutes"` // autoupdate interval
+	AutoUpdateChannel         string `yaml:"autoupdatechannel"`         // autoupdate channel
 }
 
 type NebulaLocalYamlConfig struct {

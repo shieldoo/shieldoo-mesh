@@ -83,6 +83,12 @@ func InitConfig(isDesktop bool) {
 	}
 	myconfig = mc
 	// sanitize config
+	if myconfig.SendInterval <= 1 || myconfig.SendInterval > 3600 {
+		myconfig.SendInterval = 60
+	}
+	if myconfig.AutoUpdateIntervalMinutes <= 1 || myconfig.AutoUpdateIntervalMinutes > 1440 {
+		myconfig.AutoUpdateIntervalMinutes = 720
+	}
 	if !strings.HasSuffix(myconfig.Uri, "/") {
 		myconfig.Uri += "/"
 	}
@@ -109,10 +115,6 @@ func readClientConf(filename string) (*NebulaClientYamlConfig, error) {
 	err = yaml.Unmarshal(buf, c)
 	if err != nil {
 		return c, fmt.Errorf("in file %q: %v", filename, err)
-	}
-
-	if c.SendInterval <= 0 || c.SendInterval > 3600 {
-		c.SendInterval = 60
 	}
 
 	return c, nil
