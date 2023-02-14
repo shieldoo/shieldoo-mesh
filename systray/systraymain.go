@@ -84,7 +84,7 @@ func init() {
 // messages
 const msgDisconnected = "shieldoo - disconnected"
 const msgLogo = "/logo.png"
-const msgConnectWithProfile = "Connect with profile"
+const msgConnectWithProfile = "Connect with Access Card"
 const msgWaitingForSignIn = "shieldoo - waiting for sign-in"
 
 func msgSignIn() string {
@@ -728,8 +728,8 @@ func onReady() {
 		systray.AddSeparator()
 		mSignIn = systray.AddMenuItem(msgSignIn(), msgSignIn())
 		systray.AddSeparator()
-		mEditUrl = systray.AddMenuItem("Edit organization name", "Edit organization name")
-		mFavouriteSelector = systray.AddMenuItem("Favourite organizations", "Favourite organizations")
+		mEditUrl = systray.AddMenuItem("Specify Shieldoo network", "Specify Shieldoo network")
+		mFavouriteSelector = systray.AddMenuItem("Favourite Shieldoo networks", "Favourite Shieldoo networks")
 		mFavourites = []*systray.MenuItem{}
 		for i := 0; i < maxMenuItems; i++ {
 			mFavourites = append(mFavourites, nil)
