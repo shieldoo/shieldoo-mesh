@@ -112,12 +112,12 @@ func serviceupdaterInstallLinux(fpath string) error {
 	// create  install script
 	scriptname1 := fpath + ".1.sh"
 	script1 := "#!/bin/sh\n" +
-		"at now <<ENDMAKER\n" +
-		"/opt/shieldoo-mesh/shieldoo-mesh-srv -service stop\n" +
+		"rm -f /opt/shieldoo-mesh/shieldoo-mesh-srv.bak\n" +
+		"mv /opt/shieldoo-mesh/shieldoo-mesh-srv /opt/shieldoo-mesh/shieldoo-mesh-srv.bak\n" +
 		"tar -xf " + fpath + " -C /opt/shieldoo-mesh\n" +
 		"chmod 755 /opt/shieldoo-mesh/shieldoo-mesh-srv\n" +
-		"/opt/shieldoo-mesh/shieldoo-mesh-srv -service start\n" +
-		"ENDMAKER\n"
+		"/opt/shieldoo-mesh/shieldoo-mesh-srv -service restart\n" +
+		"\n"
 	err := ioutil.WriteFile(scriptname1, []byte(script1), 0755)
 	if err != nil {
 		log.Error("serviceupdaterInstallLinux - cannot create script1: ", err)
