@@ -6,14 +6,14 @@ dialog_function () {
     loop="true"
     while [ $loop == "true" ]
     do
-        myuri=$(osascript -e 'set T to text returned of (display dialog "Please enter a URL to your Shieldoo Mesh" default answer "" with icon caution  buttons {"Cancel", "OK"} default button "OK")')
+        myuri=$(osascript -e 'set T to text returned of (display dialog "Please enter a URL to your Shieldoo Secure Network" default answer "" with icon caution  buttons {"Cancel", "OK"} default button "OK")')
         if [ $? -eq 0 ]; then
             echo "input: $myuri"
             pattern="http(s)?://[^/].....+"
             if [[ $myuri =~ $pattern ]]; then
                 loop="false"
             else
-                osascript -e 'display dialog "Please enter a valid URL to your Shieldoo Mesh!" with icon stop  buttons {"OK"} default button "OK"'
+                osascript -e 'display dialog "Please enter a valid URL to your Shieldoo Secure Network!" with icon stop  buttons {"OK"} default button "OK"'
             fi
         else
             exit 1

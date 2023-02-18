@@ -38,7 +38,7 @@ func help(err string, out io.Writer) {
 	fmt.Fprintln(out, "    -debug: Run in debug mode with more detailed logging")
 	fmt.Fprintln(out, "    -log: log to file HOME/.shieldoo/log.log")
 	fmt.Fprintln(out, "    -h, -help: Prints this help message")
-	fmt.Fprintln(out, "    -url: URL address of Shieldoo Mesh")
+	fmt.Fprintln(out, "    -url: URL address of Shieldoo Secure Network")
 }
 
 var (
@@ -55,7 +55,7 @@ func initAutostartApp() {
 
 	autostartApp = &autostart.App{
 		Name:        "ShieldooMesh",
-		DisplayName: "Shieldoo Mesh",
+		DisplayName: "Shieldoo Secure Network",
 		Exec:        []string{ex},
 	}
 }
@@ -289,7 +289,7 @@ func disconnectNebulaUI() {
 	systraySetTemplateIcon(icon.IconSigned)
 	systraySetToolTip(msgDisconnected)
 	beeep.Notify(
-		"DISCONNECTED", "You were disconnected from Shieldoo Mesh.",
+		"DISCONNECTED", "You were disconnected from Shieldoo Secure Network.",
 		filepath.FromSlash(execPath+msgLogo))
 	UpdManagerSetCheck()
 	connectionIsConnected = false
@@ -561,7 +561,7 @@ func checkConnectionStatus() {
 					systraySetToolTip("shieldoo - connected")
 					if !connectionIsConnected {
 						beeep.Notify(
-							"CONNECTED", "You were connected to Shieldoo Mesh.",
+							"CONNECTED", "You were connected to Shieldoo Secure Network.",
 							filepath.FromSlash(execPath+msgLogo))
 						UpdManagerSetCheck()
 						connectionIsConnected = true
@@ -681,7 +681,7 @@ func checkConnectionStatus() {
 }
 
 func inputUri() {
-	got, ok := inputbox.InputBox("Shieldoo mesh - your company name", "Company name", myconfig.Uri)
+	got, ok := inputbox.InputBox("Shieldoo Secure Network - your company name", "Company name", myconfig.Uri)
 	if ok && got != "" {
 		log.Debug("you entered:", got)
 		if !strings.HasSuffix(got, "/") {

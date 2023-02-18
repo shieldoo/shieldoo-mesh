@@ -2,12 +2,12 @@
 #      NSIS Installation Script          
 ############################################################################################
 
-!define APP_NAME "Shieldoo Mesh"
+!define APP_NAME "Shieldoo Secure Network"
 !define COMP_NAME "shieldoo.io"
 !define WEB_SITE "https://shieldoo.io"
 !define VERSION "0.#APPVERSION#"
 !define COPYRIGHT "shieldoo © 2022"
-!define DESCRIPTION "Shieldoo Mesh Secure Network"
+!define DESCRIPTION "Shieldoo Secure Network"
 !define INSTALLER_NAME "../../out/asset/win10-amd64/shieldoo-mesh-setup.exe"
 !define MAIN_APP_EXE "shieldoo-mesh-app.exe"
 !define INSTALL_TYPE "SetShellVarContext all"
@@ -132,7 +132,7 @@ Function nsDialogsPage
 		Abort
 	${EndIf}
 
-	${NSD_CreateLabel} 0 0 100% 12u "Please enter valid URL to Shieldoo Mesh (starting with https://)"
+	${NSD_CreateLabel} 0 0 100% 12u "Please enter valid URL to Shieldoo Secure Network (starting with https://)"
 	Pop $LabelUrl
 
 	${NSD_CreateText} 0 13u 100% 25%u ""
@@ -146,7 +146,7 @@ Function nsDialogsPageLeave
     ${NSD_GetText} $TextUrl $0
     StrCpy $STR_RT_VAR $0
     ${If} $STR_RT_VAR == ""
-        MessageBox MB_OK "Please enter valid URL to Shieldoo Mesh"
+        MessageBox MB_OK "Please enter valid URL to Shieldoo Secure Network"
         Abort
     ${EndIf}
     ${StrContains} $0 "http://" $STR_RT_VAR
@@ -157,7 +157,7 @@ Function nsDialogsPageLeave
       StrCmp $0 "" httpsnotfound
         Goto hdone
       httpsnotfound:
-        MessageBox MB_OK "Please enter valid URL to Shieldoo Mesh"
+        MessageBox MB_OK "Please enter valid URL to Shieldoo Secure Network"
         Abort
     hdone:
       StrCpy $STR_URL_VAR $STR_RT_VAR 
@@ -169,7 +169,7 @@ FunctionEnd
 
 !ifdef REG_START_MENU
 !define MUI_STARTMENUPAGE_NODISABLE
-!define MUI_STARTMENUPAGE_DEFAULTFOLDER "Shieldoo Mesh"
+!define MUI_STARTMENUPAGE_DEFAULTFOLDER "Shieldoo Secure Network"
 !define MUI_STARTMENUPAGE_REGISTRY_ROOT "${REG_ROOT}"
 !define MUI_STARTMENUPAGE_REGISTRY_KEY "${UNINSTALL_PATH}"
 !define MUI_STARTMENUPAGE_REGISTRY_VALUENAME "${REG_START_MENU}"
@@ -184,7 +184,7 @@ FunctionEnd
 
 Var AutoRunCheckBox
 Function AutoRegShow
-   ${NSD_CreateCheckbox} 120u 110u 100% 10u "&Register Shieldoo Mesh for automatic start after logon"
+   ${NSD_CreateCheckbox} 120u 110u 100% 10u "&Register Shieldoo Secure Network for automatic start after logon"
    Pop $AutoRunCheckBox
    SetCtlColors $AutoRunCheckBox "" "ffffff"
    ${NSD_Check} $AutoRunCheckBox
@@ -198,7 +198,7 @@ FunctionEnd
 
     # These indented statements modify settings for MUI_PAGE_FINISH
     !define MUI_FINISHPAGE_RUN
-    !define MUI_FINISHPAGE_RUN_TEXT "Start Shieldoo Mesh application"
+    !define MUI_FINISHPAGE_RUN_TEXT "Start Shieldoo Secure Network application"
     !define MUI_FINISHPAGE_RUN_FUNCTION "LaunchLink"
 
     !define MUI_PAGE_CUSTOMFUNCTION_SHOW "AutoRegShow"
@@ -276,12 +276,12 @@ CreateShortCut "$SMPROGRAMS\$SM_Folder\${APP_NAME} Website.lnk" "$INSTDIR\${APP_
 !endif
 
 !ifndef REG_START_MENU
-CreateDirectory "$SMPROGRAMS\Shieldoo Mesh"
-CreateShortCut "$SMPROGRAMS\Shieldoo Mesh\${APP_NAME}.lnk" "$INSTDIR\${MAIN_APP_EXE}"
+CreateDirectory "$SMPROGRAMS\Shieldoo Secure Network"
+CreateShortCut "$SMPROGRAMS\Shieldoo Secure Network\${APP_NAME}.lnk" "$INSTDIR\${MAIN_APP_EXE}"
 CreateShortCut "$DESKTOP\${APP_NAME}.lnk" "$INSTDIR\${MAIN_APP_EXE}"
 !ifdef WEB_SITE
 WriteIniStr "$INSTDIR\${APP_NAME} website.url" "InternetShortcut" "URL" "${WEB_SITE}"
-CreateShortCut "$SMPROGRAMS\Shieldoo Mesh\${APP_NAME} Website.lnk" "$INSTDIR\${APP_NAME} website.url"
+CreateShortCut "$SMPROGRAMS\Shieldoo Secure Network\${APP_NAME} Website.lnk" "$INSTDIR\${APP_NAME} website.url"
 !endif
 !endif
 
@@ -346,13 +346,13 @@ RmDir "$SMPROGRAMS\$SM_Folder"
 !endif
 
 !ifndef REG_START_MENU
-Delete "$SMPROGRAMS\Shieldoo Mesh\${APP_NAME}.lnk"
+Delete "$SMPROGRAMS\Shieldoo Secure Network\${APP_NAME}.lnk"
 !ifdef WEB_SITE
-Delete "$SMPROGRAMS\Shieldoo Mesh\${APP_NAME} Website.lnk"
+Delete "$SMPROGRAMS\Shieldoo Secure Network\${APP_NAME} Website.lnk"
 !endif
 Delete "$DESKTOP\${APP_NAME}.lnk"
 
-RmDir "$SMPROGRAMS\Shieldoo Mesh"
+RmDir "$SMPROGRAMS\Shieldoo Secure Network"
 !endif
 
 DeleteRegKey ${REG_ROOT} "${REG_APP_PATH}"

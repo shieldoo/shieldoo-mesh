@@ -2,12 +2,12 @@
 #      NSIS Installation Script          
 ############################################################################################
 
-!define APP_NAME "Shieldoo Mesh"
+!define APP_NAME "Shieldoo Secure Network"
 !define COMP_NAME "shieldoo.io"
 !define WEB_SITE "https://shieldoo.io"
 !define VERSION "0.#APPVERSION#"
 !define COPYRIGHT "shieldoo © 2022"
-!define DESCRIPTION "Shieldoo Mesh Secure Network"
+!define DESCRIPTION "Shieldoo Secure Network"
 !define INSTALLER_NAME "../../out/asset/win10-amd64/shieldoo-mesh-svc-setup.exe"
 !define MAIN_APP_EXE "shieldoo-mesh-srv.exe"
 !define INSTALL_TYPE "SetShellVarContext all"
@@ -74,7 +74,7 @@ Function nsDialogsPage
 		Abort
 	${EndIf}
 
-	${NSD_CreateLabel} 0 0 100% 12u "Please enter valid DATA for Shieldoo Mesh"
+	${NSD_CreateLabel} 0 0 100% 12u "Please enter valid DATA for Shieldoo Secure Network"
 	Pop $LabelData
 
 	${NSD_CreateText} 0 13u 100% -13u ""
@@ -87,7 +87,7 @@ FunctionEnd
 Function nsDialogsPageLeave
     ${NSD_GetText} $TextData $0
     ${If} $0 == ""
-        MessageBox MB_OK "Please enter valid DATA for Shieldoo Mesh"
+        MessageBox MB_OK "Please enter valid DATA for Shieldoo Secure Network"
         Abort
     ${EndIf}
 FunctionEnd
@@ -98,7 +98,7 @@ FunctionEnd
 
 !ifdef REG_START_MENU
 !define MUI_STARTMENUPAGE_NODISABLE
-!define MUI_STARTMENUPAGE_DEFAULTFOLDER "Shieldoo Mesh"
+!define MUI_STARTMENUPAGE_DEFAULTFOLDER "Shieldoo Secure Network"
 !define MUI_STARTMENUPAGE_REGISTRY_ROOT "${REG_ROOT}"
 !define MUI_STARTMENUPAGE_REGISTRY_KEY "${UNINSTALL_PATH}"
 !define MUI_STARTMENUPAGE_REGISTRY_VALUENAME "${REG_START_MENU}"
