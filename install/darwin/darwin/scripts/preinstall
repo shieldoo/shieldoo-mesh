@@ -43,4 +43,7 @@ sudo rm /Library/LaunchDaemons/shieldoo-mesh.plist
 # killall client apps
 sudo killall shieldoo-mesh-app
 
+# remove old, old files
+sudo rm -rf '/Applications/Shieldoo Mesh.app'
+
 exit 0

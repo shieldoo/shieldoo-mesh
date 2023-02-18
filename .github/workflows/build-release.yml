@@ -58,13 +58,13 @@ jobs:
         cd install/darwin
         TMPVER="{$MYTAG}-"
         TMPVERSION=(${TMPVER//-/ }[0])
-        ./build-pkg.sh ShieldooMesh $TMPVERSION ../../out "$APPLE_DEVCERT_APPLICATION_ID"
+        ./build-pkg.sh ShieldooSecureNetwork $TMPVERSION ../../out "$APPLE_DEVCERT_APPLICATION_ID"
         cd ../darwinsvc
-        ./build-pkg.sh ShieldooMesh $TMPVERSION ../../out "$APPLE_DEVCERT_APPLICATION_ID"
+        ./build-pkg.sh ShieldooSecureNetwork $TMPVERSION ../../out "$APPLE_DEVCERT_APPLICATION_ID"
         cd ..
         rm ../out/*
-        cp ./darwin/target/pkg/ShieldooMesh.pkg ../out/darwin-x64-shieldoo-mesh-setup-unsigned.pkg
-        cp ./darwinsvc/target/pkg/ShieldooMesh.pkg ../out/darwin-x64-shieldoo-mesh-svc-setup-unsigned.pkg
+        cp ./darwin/target/pkg/ShieldooSecureNetwork.pkg ../out/darwin-x64-shieldoo-mesh-setup-unsigned.pkg
+        cp ./darwinsvc/target/pkg/ShieldooSecureNetwork.pkg ../out/darwin-x64-shieldoo-mesh-svc-setup-unsigned.pkg
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v2
