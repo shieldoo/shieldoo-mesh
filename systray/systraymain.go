@@ -54,7 +54,7 @@ func initAutostartApp() {
 	}
 
 	autostartApp = &autostart.App{
-		Name:        "ShieldooMesh",
+		Name:        "ShieldooSecureNetwork",
 		DisplayName: "Shieldoo Secure Network",
 		Exec:        []string{ex},
 	}

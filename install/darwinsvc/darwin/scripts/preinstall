@@ -4,4 +4,7 @@
 sudo launchctl unload /Library/LaunchDaemons/shieldoo-mesh.plist
 sudo rm /Library/LaunchDaemons/shieldoo-mesh.plist
 
+# remove old, old files
+sudo rm -rf '/Applications/Shieldoo Mesh.app'
+
 exit 0
