@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # change access rights
-sudo chgrp -R staff /Applications/Shieldoo\ Mesh.app
+sudo chgrp -R staff /Applications/Shieldoo\ Secure\ Network.app
 
 loop="true"
 # if exists unatendent installation file
@@ -20,7 +20,7 @@ do
             tmpdata=$(echo "$mydata" | base64 -d)
             if [ $? -eq 0 ]; then
                 mydata=$(echo "$tmpdata" | base64 -b 0)
-                sudo /Applications/Shieldoo\ Mesh.app/Contents/MacOS/shieldoo-mesh-srv -createconfig $mydata
+                sudo /Applications/Shieldoo\ Secure\ Network.app/Contents/MacOS/shieldoo-mesh-srv -createconfig $mydata
                 if [ $? -eq 0 ]; then
                     loop="false"
                 fi
@@ -35,9 +35,9 @@ do
 done
 
 # register service
-sudo /Applications/Shieldoo\ Mesh.app/Contents/MacOS/shieldoo-mesh-srv -service install
+sudo /Applications/Shieldoo\ Secure\ Network.app/Contents/MacOS/shieldoo-mesh-srv -service install
 
 #start service
-sudo /Applications/Shieldoo\ Mesh.app/Contents/MacOS/shieldoo-mesh-srv -service start
+sudo /Applications/Shieldoo\ Secure\ Network.app/Contents/MacOS/shieldoo-mesh-srv -service start
 
 exit 0
