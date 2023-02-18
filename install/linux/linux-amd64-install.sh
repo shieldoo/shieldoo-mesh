@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "Starting the installation of Shieldoo Mesh."
+echo "Starting the installation of Shieldoo Secure Network."
 
 # create directory
 mkdir -p /opt/shieldoo-mesh
@@ -46,9 +46,9 @@ Version=1.0
 Type=Application
 Terminal=false
 Exec=/opt/shieldoo-mesh/shieldoo-mesh-app
-Name=Shieldoo Mesh
-Comment=Shieldoo Mesh Desktop Client
+Name=Shieldoo Secure Network
+Comment=Shieldoo Secure Network Desktop Client
 Icon=/opt/shieldoo-mesh/logo.png
 " > /usr/share/applications/ShieldooMesh.desktop
 
-echo "The Shieldoo Mesh installation has been successfully completed."
+echo "The Shieldoo Secure Network installation has been successfully completed."

@@ -40,8 +40,8 @@ func (p *program) Stop(s service.Service) error {
 func SystemSvcDo(serviceFlag string, desktopFlag bool, debugFlag bool) (err error) {
 	svcConfig := &service.Config{
 		Name:        "shieldoo-mesh",
-		DisplayName: "Shieldoo Mesh Network Service",
-		Description: "Shieldoo Mesh network connectivity daemon for encrypted communications",
+		DisplayName: "Shieldoo Secure Network Service",
+		Description: "Shieldoo Secure Network connectivity daemon for encrypted communications",
 	}
 
 	systemsvcIsDesktop = desktopFlag

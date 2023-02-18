@@ -252,8 +252,8 @@ jobs:
     - name: Sign win binaries
       run: |
         echo "${SAFENET_CER}" | base64 -d > cf.cer
-        ./install/windows/osslsigncode sign -n "Shieldoo Mesh" -certs cf.cer -pass "$SAFENET_ETOKEN" -pkcs11engine /snap/core20/current/usr/lib/x86_64-linux-gnu/engines-1.1/libpkcs11.so -pkcs11module /usr/lib/libeToken.so -h sha256 -i "https://shieldoo.io" -in ./out/asset/win10-amd64/shieldoo-mesh-app.exe -out ./out/asset/win10-amd64/shieldoo-mesh-app-sig.exe
-        ./install/windows/osslsigncode sign -n "Shieldoo Mesh" -certs cf.cer -pass "$SAFENET_ETOKEN" -pkcs11engine /snap/core20/current/usr/lib/x86_64-linux-gnu/engines-1.1/libpkcs11.so -pkcs11module /usr/lib/libeToken.so -h sha256 -i "https://shieldoo.io" -in ./out/asset/win10-amd64/shieldoo-mesh-srv.exe -out ./out/asset/win10-amd64/shieldoo-mesh-srv-sig.exe
+        ./install/windows/osslsigncode sign -n "Shieldoo Secure Network" -certs cf.cer -pass "$SAFENET_ETOKEN" -pkcs11engine /snap/core20/current/usr/lib/x86_64-linux-gnu/engines-1.1/libpkcs11.so -pkcs11module /usr/lib/libeToken.so -h sha256 -i "https://shieldoo.io" -in ./out/asset/win10-amd64/shieldoo-mesh-app.exe -out ./out/asset/win10-amd64/shieldoo-mesh-app-sig.exe
+        ./install/windows/osslsigncode sign -n "Shieldoo Secure Network" -certs cf.cer -pass "$SAFENET_ETOKEN" -pkcs11engine /snap/core20/current/usr/lib/x86_64-linux-gnu/engines-1.1/libpkcs11.so -pkcs11module /usr/lib/libeToken.so -h sha256 -i "https://shieldoo.io" -in ./out/asset/win10-amd64/shieldoo-mesh-srv.exe -out ./out/asset/win10-amd64/shieldoo-mesh-srv-sig.exe
         rm ./out/asset/win10-amd64/shieldoo-mesh-app.exe
         rm ./out/asset/win10-amd64/shieldoo-mesh-srv.exe
         mv ./out/asset/win10-amd64/shieldoo-mesh-app-sig.exe ./out/asset/win10-amd64/shieldoo-mesh-app.exe
@@ -272,8 +272,8 @@ jobs:
     - name: Sign win installers
       run: |
         echo "${SAFENET_CER}" | base64 -d > cf.cer
-        ./install/windows/osslsigncode sign -n "Shieldoo Mesh" -certs cf.cer -pass "$SAFENET_ETOKEN" -pkcs11engine /snap/core20/current/usr/lib/x86_64-linux-gnu/engines-1.1/libpkcs11.so -pkcs11module /usr/lib/libeToken.so -h sha256 -i "https://shieldoo.io" -in ./out/asset/win10-amd64/shieldoo-mesh-svc-setup.exe -out ./out/asset/win10-amd64/shieldoo-mesh-svc-setup-sig.exe
-        ./install/windows/osslsigncode sign -n "Shieldoo Mesh" -certs cf.cer -pass "$SAFENET_ETOKEN" -pkcs11engine /snap/core20/current/usr/lib/x86_64-linux-gnu/engines-1.1/libpkcs11.so -pkcs11module /usr/lib/libeToken.so -h sha256 -i "https://shieldoo.io" -in ./out/asset/win10-amd64/shieldoo-mesh-setup.exe -out ./out/asset/win10-amd64/shieldoo-mesh-setup-sig.exe
+        ./install/windows/osslsigncode sign -n "Shieldoo Secure Network" -certs cf.cer -pass "$SAFENET_ETOKEN" -pkcs11engine /snap/core20/current/usr/lib/x86_64-linux-gnu/engines-1.1/libpkcs11.so -pkcs11module /usr/lib/libeToken.so -h sha256 -i "https://shieldoo.io" -in ./out/asset/win10-amd64/shieldoo-mesh-svc-setup.exe -out ./out/asset/win10-amd64/shieldoo-mesh-svc-setup-sig.exe
+        ./install/windows/osslsigncode sign -n "Shieldoo Secure Network" -certs cf.cer -pass "$SAFENET_ETOKEN" -pkcs11engine /snap/core20/current/usr/lib/x86_64-linux-gnu/engines-1.1/libpkcs11.so -pkcs11module /usr/lib/libeToken.so -h sha256 -i "https://shieldoo.io" -in ./out/asset/win10-amd64/shieldoo-mesh-setup.exe -out ./out/asset/win10-amd64/shieldoo-mesh-setup-sig.exe
         rm ./out/asset/win10-amd64/shieldoo-mesh-svc-setup.exe
         rm ./out/asset/win10-amd64/shieldoo-mesh-setup.exe
         mv ./out/asset/win10-amd64/shieldoo-mesh-svc-setup-sig.exe ./out/asset/win10-amd64/shieldoo-mesh-svc-setup.exe

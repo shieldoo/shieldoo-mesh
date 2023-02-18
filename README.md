@@ -1,4 +1,4 @@
-# Shieldoo Mesh client
+# Shieldoo Secure Network client
 [![Build](https://github.com/shieldoo/shieldoo-mesh/actions/workflows/build.yml/badge.svg)](https://github.com/shieldoo/shieldoo-mesh/actions/workflows/build.yml) 
 [![Release](https://img.shields.io/github/v/release/shieldoo/shieldoo-mesh?logo=GitHub&style=flat-square)](https://github.com/shieldoo/shieldoo-mesh/releases/latest) 
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=shieldoo_shieldoo-mesh&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=shieldoo_shieldoo-mesh) 
@@ -12,7 +12,7 @@ Nebula ia maintained by Slack and is actively developed and supported on github,
 
 Nebula is a scalable overlay networking tool with a focus on performance, simplicity and security. It lets you seamlessly connect computers anywhere in the world. Nebula is portable, and runs on Linux, OSX, Windows, iOS, and Android. It can be used to connect a small number of computers, but is also able to connect tens of thousands of computers.
 
-Original github repository can be found there https://github.com/slackhq/nebula (Shieldoo Mesh is referencing this repository like golang package).
+Original github repository can be found there https://github.com/slackhq/nebula (Shieldoo Secure Network is referencing this repository like golang package).
 
 # Installation instructions
 
@@ -27,7 +27,7 @@ For the installation we have to collect necessary configuration - it is URL wher
 #### Graphical installation
 
 Download installation package `windows-amd64-shieldoo-mesh-setup.exe` and run installation. On the second screen of installation wizard provide URL of web management portal - for example for demo portal `https://demo.shieldoo.net` and finish installation.
-Shieldoo mesh client application will run in sys-tray, please follow user manual for details.
+Shieldoo Secure Network client application will run in sys-tray, please follow user manual for details.
 
 #### Automated installation from command line
 
@@ -38,7 +38,7 @@ windows-amd64-shieldoo-mesh-setup.exe  /S /URL="https://demo.shieldoo.net"
 ```
 ### Linux
 
-Shieldoo mesh service will run like system service with name shieldoo-mesh and logs are printed to STDOUT which can be seen by standard linux management commands.   
+Shieldoo Secure Network service will run like system service with name shieldoo-mesh and logs are printed to STDOUT which can be seen by standard linux management commands.   
 
 #### Installation from command line
 
@@ -68,7 +68,7 @@ sudo ./linux-amd64-install.sh "$USER" "https://<YOUR URL>"
 
 Because Centos has no direct support for System tray icons we have to use few tweaks:
 
-* install Tweak application to be able to enable desktop icons (Shieldoo mesh than will appear on desktop)
+* install Tweak application to be able to enable desktop icons (Shieldoo Secure Network than will appear on desktop)
 * install Gnome extension to support systray on Wayland desktop
   * download App indicator - https://extensions.gnome.org/extension/615/appindicator-support/
   * activate app indicator by copying extracted directory to `~/.local/share/gnome-shell/extensions/`
@@ -83,7 +83,7 @@ For the installation we have to collect necessary configuration - it is CONFIGUR
 
 ### Windows
 
-Shieldoo mesh service will run like system service with name shieldoo-mesh and logs are stored in Windows event log.   
+Shieldoo Secure Network service will run like system service with name shieldoo-mesh and logs are stored in Windows event log.   
 
 #### Graphical installation
 
@@ -99,7 +99,7 @@ windows-amd64-shieldoo-mesh-svc-setup.exe  /S /DATA="<BASE64 CONFIGURATION DATA>
 
 ### Linux
 
-Shieldoo mesh service will run like system service with name shieldoo-mesh and logs are printed to STDOUT which can be seen by standard linux management commands.   
+Shieldoo Secure Network service will run like system service with name shieldoo-mesh and logs are printed to STDOUT which can be seen by standard linux management commands.   
 
 #### Installation from command line
 

@@ -12,7 +12,7 @@ if [ -f /Library/Preferences/ShieldooMesh/unattended-install ]; then
 fi
 while [ $loop == "true" ]
 do
-    mydata=$(osascript -e 'set T to text returned of (display dialog "Please enter a CONFIGURATION DATA to your Shieldoo Mesh" default answer "\r\r\r\r\r\r\r\r" with icon caution  buttons {"Cancel", "OK"} default button "OK")')
+    mydata=$(osascript -e 'set T to text returned of (display dialog "Please enter a CONFIGURATION DATA to your Shieldoo Secure Network" default answer "\r\r\r\r\r\r\r\r" with icon caution  buttons {"Cancel", "OK"} default button "OK")')
     if [ $? -eq 0 ]; then
         #echo "input: $mydata"
         pattern=".................................+"
@@ -27,7 +27,7 @@ do
             fi
         fi
         if [ $loop == "true" ]; then
-            osascript -e 'display dialog "Please enter a valid CONFIGURATION DATA to your Shieldoo Mesh!" with icon stop  buttons {"OK"} default button "OK"'
+            osascript -e 'display dialog "Please enter a valid CONFIGURATION DATA to your Shieldoo Secure Network!" with icon stop  buttons {"OK"} default button "OK"'
         fi
     else
         exit 1
