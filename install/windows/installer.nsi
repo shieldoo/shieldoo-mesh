@@ -308,6 +308,7 @@ ${INSTALL_TYPE}
 ; unregister service
 ExecWait '"$INSTDIR\shieldoo-mesh-srv.exe" -desktop -service stop'
 ExecWait '"$INSTDIR\shieldoo-mesh-srv.exe" -desktop -service uninstall'
+ExecWait 'cmd.exe /C taskkill /f /im shieldoo-mesh-app.exe'
 
 Delete "$INSTDIR\logo.png"
 Delete "$INSTDIR\${MAIN_APP_EXE}"
