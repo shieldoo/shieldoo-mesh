@@ -159,6 +159,9 @@ ExecWait 'sc failure shieldoo-mesh reset=86400 actions=restart/1000/restart/1000
 ; start service
 ExecWait '"$INSTDIR\shieldoo-mesh-srv.exe" -service start'
 
+; uninstall old application (old name)
+DeleteRegKey ${REG_ROOT} "Software\Microsoft\Windows\CurrentVersion\Uninstall\Shieldoo Mesh"
+
 SectionEnd
 
 ######################################################################
