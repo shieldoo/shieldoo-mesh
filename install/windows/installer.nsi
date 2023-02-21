@@ -184,7 +184,7 @@ FunctionEnd
 
 Var AutoRunCheckBox
 Function AutoRegShow
-   ${NSD_CreateCheckbox} 120u 110u 100% 10u "&Register Shieldoo Secure Network for automatic start after logon"
+   ${NSD_CreateCheckbox} 120u 110u 100% 10u "&Register Shieldoo Secure Network for automatic startup"
    Pop $AutoRunCheckBox
    SetCtlColors $AutoRunCheckBox "" "ffffff"
    ${NSD_Check} $AutoRunCheckBox
@@ -254,6 +254,9 @@ ExecWait '"$INSTDIR\shieldoo-mesh-srv.exe" -desktop -service start'
 ; set URL for client
 IfFileExists $PROFILE\.shieldoo\shieldoo-mesh.yaml +2 0
 ExecWait '"$INSTDIR\${MAIN_APP_EXE}" -url $STR_URL_VAR'
+
+; uninstall old application (old name)
+DeleteRegKey ${REG_ROOT} "Software\Microsoft\Windows\CurrentVersion\Uninstall\Shieldoo Mesh"
 
 SectionEnd
 
@@ -333,6 +336,9 @@ Delete "$INSTDIR\${APP_NAME} website.url"
 !endif
 
 RmDir "$INSTDIR"
+
+Delete "$PROFILE\.shieldoo\shieldoo-mesh.yaml"
+RmDir "$PROFILE\.shieldoo"
 
 !ifdef REG_START_MENU
 !insertmacro MUI_STARTMENU_GETFOLDER "Application" $SM_Folder
