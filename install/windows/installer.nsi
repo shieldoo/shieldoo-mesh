@@ -257,6 +257,8 @@ ExecWait '"$INSTDIR\${MAIN_APP_EXE}" -url $STR_URL_VAR'
 
 ; uninstall old application (old name)
 DeleteRegKey ${REG_ROOT} "Software\Microsoft\Windows\CurrentVersion\Uninstall\Shieldoo Mesh"
+; delete old autostart link
+Delete "$PROFILE\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup\ShieldooMesh.lnk"
 
 SectionEnd
 
