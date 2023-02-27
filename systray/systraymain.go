@@ -232,10 +232,10 @@ func connectNebulaUIDefault() {
 }
 
 func connectNebulaUI(index int) {
+	connectDisable(false)
 	if mDisconnect != nil {
 		systrayMenuItemEnable(mDisconnect)
 	}
-	connectDisable(false)
 	if mSignIn != nil {
 		systrayMenuItemDisable(mSignIn)
 	}
@@ -269,10 +269,10 @@ func connectNebulaUI(index int) {
 }
 
 func disconnectNebulaUI() {
+	connectEnable(false)
 	if mDisconnect != nil {
 		systrayMenuItemDisable(mDisconnect)
 	}
-	connectEnable(false)
 	if mSignIn != nil {
 		systrayMenuItemEnable(mSignIn)
 	}
@@ -385,12 +385,19 @@ func redrawConnectMenu() {
 
 func connectEnable(force bool) {
 	if (!mConnectEnabled || force) && mConnectDefault != nil && mConnect != nil {
+		if localconfGetAccessesLen() == 0 {
+			mDisconnect.Hide()
+			mConnectDefault.Hide()
+			mConnect.Hide()
+		} else {
+			mDisconnect.Show()
+		}
 		if localconfGetAccessesLen() == 1 {
 			mConnectDefault.Show()
 			systrayMenuItemEnable(mConnectDefault)
 			mConnect.Hide()
 			systrayMenuItemDisable(mConnect)
-		} else {
+		} else if localconfGetAccessesLen() > 1 {
 			mConnectDefault.Hide()
 			mConnect.Show()
 			if localconfGetAccessesLen() > 0 {
@@ -405,12 +412,19 @@ func connectEnable(force bool) {
 
 func connectDisable(force bool) {
 	if (mConnectEnabled || force) && mConnectDefault != nil && mConnect != nil {
+		if localconfGetAccessesLen() == 0 {
+			mDisconnect.Hide()
+			mConnectDefault.Hide()
+			mConnect.Hide()
+		} else {
+			mDisconnect.Show()
+		}
 		if localconfGetAccessesLen() == 1 {
 			mConnectDefault.Show()
 			systrayMenuItemDisable(mConnectDefault)
 			mConnect.Hide()
 			systrayMenuItemDisable(mConnect)
-		} else {
+		} else if localconfGetAccessesLen() > 1 {
 			mConnectDefault.Hide()
 			mConnect.Show()
 			systrayMenuItemDisable(mConnect)
