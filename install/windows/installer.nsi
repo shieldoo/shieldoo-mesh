@@ -255,10 +255,12 @@ ExecWait '"$INSTDIR\shieldoo-mesh-srv.exe" -desktop -service start'
 IfFileExists $PROFILE\.shieldoo\shieldoo-mesh.yaml +2 0
 ExecWait '"$INSTDIR\${MAIN_APP_EXE}" -url $STR_URL_VAR'
 
-; uninstall old application (old name)
+; old file romoval after rename product from Shieldoo Mesh to Shieldoo Secure Network
 DeleteRegKey ${REG_ROOT} "Software\Microsoft\Windows\CurrentVersion\Uninstall\Shieldoo Mesh"
-; delete old autostart link
 Delete "$PROFILE\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup\ShieldooMesh.lnk"
+Delete "$SMPROGRAMS\Shieldoo Mesh\Shieldoo Mesh.lnk"
+Delete "$SMPROGRAMS\Shieldoo Mesh\Shieldoo Mesh Website.lnk"
+RmDir "$SMPROGRAMS\Shieldoo Secure Network"
 
 SectionEnd
 
