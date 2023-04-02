@@ -248,3 +248,9 @@ run installer in silent mode:
 ```
 shieldoo-mesh-svc-setup.exe  /S /DATA="base64-encoded-data"
 ```
+
+# Run server in container
+Start container with NET_ADMIN cap and mount `myconfig.yaml` to `/app/config/myconfig.yaml`, containing base64 decoded configuration data from Admin UI.
+```
+docker run --cap-add NET_ADMIN --volume /shieldoo-mesh/config:/app/config shieldoo:latest
+```
