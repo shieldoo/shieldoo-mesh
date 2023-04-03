@@ -1,8 +1,5 @@
 #!/bin/sh
 
-# catch terminate signals
-#trap 'exit 0' SIGTERM
-
 echo '
        .__    .__       .__       .___             
   _____|  |__ |__| ____ |  |    __| _/____   ____  
