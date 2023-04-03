@@ -1,11 +1,15 @@
-FROM golang:1.20 as build
+FROM golang:1.20 AS build
 
 WORKDIR /src
-COPY . .
+COPY ["*.go", "go.mod", "go.sum", "./"]
+COPY goproxy ./goproxy
+COPY test ./test
+COPY wstunnel ./wstunnel
+COPY rpc ./rpc
 
 RUN apt-get update && \
-    apt-get install -y gcc libgtk-3-dev libappindicator3-dev && \
-    apt-get install -y --no-install-recommends -y nsis nsis-doc nsis-pluginapi 
+    apt-get install -y --no-install-recommends gcc libgtk-3-dev libappindicator3-dev && \
+    apt-get install -y --no-install-recommends nsis nsis-doc nsis-pluginapi 
 
 RUN env GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -ldflags "-X main.APPVERSION=0.0.0 -X main.ARCHITECTURE=amd64" -o out/shieldoo-mesh-srv
 
