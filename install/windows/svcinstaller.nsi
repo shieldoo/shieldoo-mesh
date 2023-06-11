@@ -5,8 +5,9 @@
 !define APP_NAME "Shieldoo Secure Network"
 !define COMP_NAME "shieldoo.io"
 !define WEB_SITE "https://shieldoo.io"
-!define VERSION "0.#APPVERSION#"
-!define COPYRIGHT "shieldoo © 2022"
+#!define VERSION "0.#APPVERSION#"
+!define VERSION "0.0.0.0"
+!define COPYRIGHT "shieldoo © 2022-2023"
 !define DESCRIPTION "Shieldoo Secure Network"
 !define INSTALLER_NAME "../../out/asset/win10-amd64/shieldoo-mesh-svc-setup.exe"
 !define MAIN_APP_EXE "shieldoo-mesh-srv.exe"
@@ -62,6 +63,8 @@ FunctionEnd
 Var DialogData
 Var LabelData
 Var TextData
+Var EnableRDP
+Var RDPCheckboxData
 
 Page custom nsDialogsPage nsDialogsPageLeave
 
@@ -77,8 +80,11 @@ Function nsDialogsPage
 	${NSD_CreateLabel} 0 0 100% 12u "Please enter valid DATA for Shieldoo Secure Network"
 	Pop $LabelData
 
-	${NSD_CreateText} 0 13u 100% -13u ""
+	${NSD_CreateText} 0 13u 100% 65u ""
 	Pop $TextData
+
+    ${NSD_CreateCheckbox} 0 80u 100% 12u "Enable Remote Desktop Connection (RDP) on this computer."
+    Pop $RDPCheckboxData
 
 	nsDialogs::Show
 
@@ -86,6 +92,7 @@ FunctionEnd
 
 Function nsDialogsPageLeave
     ${NSD_GetText} $TextData $0
+    ${NSD_GetState} $RDPCheckboxData $EnableRDP
     ${If} $0 == ""
         MessageBox MB_OK "Please enter valid DATA for Shieldoo Secure Network"
         Abort
@@ -161,6 +168,13 @@ ExecWait '"$INSTDIR\shieldoo-mesh-srv.exe" -service start'
 
 ; uninstall old application (old name)
 DeleteRegKey ${REG_ROOT} "Software\Microsoft\Windows\CurrentVersion\Uninstall\Shieldoo Mesh"
+
+; enable RDP if requested
+${If} "$EnableRDP" == "1"
+    WriteRegDWORD ${REG_ROOT} "SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp" "UserAuthentication" 0
+    WriteRegDWORD ${REG_ROOT} "SYSTEM\CurrentControlSet\Control\Terminal Server" "FDenyTSConnections" 0
+    ExecWait 'netsh advfirewall firewall set rule group="remote desktop" new enable=Yes'
+${EndIf}
 
 SectionEnd
 

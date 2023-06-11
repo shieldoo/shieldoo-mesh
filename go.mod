@@ -15,8 +15,8 @@ require (
 	github.com/sirupsen/logrus v1.8.1
 	github.com/skratchdot/open-golang v0.0.0-20200116055534-eef842397966
 	github.com/slackhq/nebula v1.6.1
-	golang.org/x/sys v0.0.0-20220406155245-289d7a0edf71
-	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
+	golang.org/x/sys v0.8.0
+	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (

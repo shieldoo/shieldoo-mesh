@@ -6,7 +6,7 @@
 !define COMP_NAME "shieldoo.io"
 !define WEB_SITE "https://shieldoo.io"
 !define VERSION "0.#APPVERSION#"
-!define COPYRIGHT "shieldoo © 2022"
+!define COPYRIGHT "shieldoo © 2022-2023"
 !define DESCRIPTION "Shieldoo Secure Network"
 !define INSTALLER_NAME "../../out/asset/win10-amd64/shieldoo-mesh-setup.exe"
 !define MAIN_APP_EXE "shieldoo-mesh-app.exe"
