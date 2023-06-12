@@ -183,28 +183,36 @@ FunctionEnd
 !insertmacro MUI_UNPAGE_INSTFILES
 
 Var AutoRunCheckBox
+Var AutoDisconnectCheckBox
 Function AutoRegShow
    ${NSD_CreateCheckbox} 120u 110u 100% 10u "&Register Shieldoo Secure Network for automatic startup"
    Pop $AutoRunCheckBox
    SetCtlColors $AutoRunCheckBox "" "ffffff"
    ${NSD_Check} $AutoRunCheckBox
+   ${NSD_CreateCheckbox} 120u 130u 100% 10u "&Enable automatic disconnect when VPN is inactive"
+   Pop $AutoDisconnectCheckBox
+   SetCtlColors $AutoDisconnectCheckBox "" "ffffff"
 FunctionEnd
 Function AutoRegRun
     ${NSD_GetState} $AutoRunCheckBox $1
     ${If} $1 <> 0
       ExecWait '"$INSTDIR\${MAIN_APP_EXE}" -autostart'
     ${EndIf}
+    ${NSD_GetState} $AutoDisconnectCheckBox $1
+    ${If} $1 <> 0
+      ExecWait '"$INSTDIR\${MAIN_APP_EXE}" -autodisconnect'
+    ${EndIf}
 FunctionEnd
 
-    # These indented statements modify settings for MUI_PAGE_FINISH
-    !define MUI_FINISHPAGE_RUN
-    !define MUI_FINISHPAGE_RUN_TEXT "Start Shieldoo Secure Network application"
-    !define MUI_FINISHPAGE_RUN_FUNCTION "LaunchLink"
+# These indented statements modify settings for MUI_PAGE_FINISH
+!define MUI_FINISHPAGE_RUN
+!define MUI_FINISHPAGE_RUN_TEXT "Start Shieldoo Secure Network application"
+!define MUI_FINISHPAGE_RUN_FUNCTION "LaunchLink"
 
-    !define MUI_PAGE_CUSTOMFUNCTION_SHOW "AutoRegShow"
-    !define MUI_PAGE_CUSTOMFUNCTION_LEAVE "AutoRegRun"
+!define MUI_PAGE_CUSTOMFUNCTION_SHOW "AutoRegShow"
+!define MUI_PAGE_CUSTOMFUNCTION_LEAVE "AutoRegRun"
 
-  !insertmacro MUI_PAGE_FINISH
+!insertmacro MUI_PAGE_FINISH
 
 !insertmacro MUI_LANGUAGE "English"
 

@@ -27,7 +27,7 @@ const (
 )
 
 const (
-	RPCVERSION string = "1.2"
+	RPCVERSION string = "1.3"
 )
 
 type RpcCommandStart struct {
@@ -55,7 +55,8 @@ type RpcCommandResponse struct {
 	IsConnected       bool   `json:"isconnected"`
 	IsRunning         bool   `json:"isrunning"`
 	Uri               string `json:"uri"`
-	RestrictedNetwork bool   `yaml:"restrictednetwork"`
+	RestrictedNetwork bool   `json:"restrictednetwork"`
+	TunnelExists      bool   `json:"tunnelexists"`
 }
 
 // Parse message header, get message type and content length

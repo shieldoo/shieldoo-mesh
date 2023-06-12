@@ -23,12 +23,14 @@ type NebulaClientFavouriteItem struct {
 }
 
 type NebulaClientUPNYamlConfig struct {
-	Upn               string                     `yaml:"upn"`
-	Uri               string                     `yaml:"uri"`
-	Secret            string                     `yaml:"-"`
-	RestrictedNetwork bool                       `yaml:"-"`
-	ClientID          string                     `yaml:"clientid"`
-	FavouriteItems     []NebulaClientFavouriteItem `yaml:"favouriteitems"`
+	Upn                           string                      `yaml:"upn"`
+	Uri                           string                      `yaml:"uri"`
+	Secret                        string                      `yaml:"-"`
+	RestrictedNetwork             bool                        `yaml:"-"`
+	ClientID                      string                      `yaml:"clientid"`
+	FavouriteItems                []NebulaClientFavouriteItem `yaml:"favouriteitems"`
+	AutoDisconnect                bool                        `yaml:"autodisconnect"`
+	AutoDisconnectIntervalMinutes int                         `yaml:"autodisconnectintervalminutes"`
 }
 
 var myconfig *NebulaClientUPNYamlConfig
@@ -78,6 +80,10 @@ func cleanupConfig() {
 	}
 	if myconfig.ClientID == "" {
 		myconfig.ClientID = GenerateRandomString(52)
+		saveClientConf()
+	}
+	if myconfig.AutoDisconnectIntervalMinutes == 0 {
+		myconfig.AutoDisconnectIntervalMinutes = 20
 		saveClientConf()
 	}
 }
