@@ -42,9 +42,10 @@ func help(err string, out io.Writer) {
 }
 
 var (
-	autostartApp          *autostart.App
-	connectionIsConnected bool = false
-	execPath              string
+	autostartApp            *autostart.App
+	connectionIsConnected   bool = false
+	connectionIsRunningFrom time.Time
+	execPath                string
 )
 
 func initAutostartApp() {
@@ -106,6 +107,7 @@ func main() {
 
 	debugFlag := flag.Bool("debug", false, "Run in debug mode with more detailed logging.")
 	autostartFlag := flag.Bool("autostart", false, "Enable autostart.")
+	autodisconnectFlag := flag.Bool("autodisconnect", false, "Enable auto-disconnect.")
 	logFlag := flag.Bool("log", false, "Log to file HOME/.shieldoo/log.log.")
 	urlFlag := flag.String("url", "", "Control the system service.")
 	flagH := flag.Bool("h", false, "Print command line usage")
@@ -152,6 +154,13 @@ func main() {
 		if !strings.HasSuffix(myconfig.Uri, "/") {
 			myconfig.Uri += "/"
 		}
+		saveClientConf()
+		os.Exit(0)
+	}
+
+	//setup autodisconnect
+	if *autodisconnectFlag {
+		myconfig.AutoDisconnect = true
 		saveClientConf()
 		os.Exit(0)
 	}
@@ -480,8 +489,10 @@ func activateFavouriteItem(idx int) {
 				log.Debug("telemetrySend success")
 				connectEnable(false)
 				redrawConnectMenu()
-				// if there is only one connection, connect to it
-				connectNebulaUIDefault()
+				// if we have only one access, connect to it, but it is allowed only if aut-disconnect is not enabled
+				if !myconfig.AutoDisconnect {
+					connectNebulaUIDefault()
+				}
 			} else {
 				log.Error("telemetrySend failed")
 				myconfig.Secret = ""
@@ -579,6 +590,7 @@ func checkConnectionStatus() {
 							filepath.FromSlash(execPath+msgLogo))
 						UpdManagerSetCheck()
 						connectionIsConnected = true
+						connectionIsRunningFrom = time.Now().UTC()
 						systraySetTemplateIcon(icon.IconConnected1)
 						time.Sleep(200 * time.Millisecond)
 						systraySetTemplateIcon(icon.IconConnected2)
@@ -618,6 +630,16 @@ func checkConnectionStatus() {
 					iconConnectingIndex++
 					systraySetTemplateIcon(*tmpicn)
 					systraySetToolTip("shieldoo - connecting ..")
+				}
+				// process auto-disconnect
+				if connectionIsConnected &&
+					myconfig.AutoDisconnect &&
+					time.Now().UTC().Sub(connectionIsRunningFrom).Minutes() > float64(myconfig.AutoDisconnectIntervalMinutes) {
+					// lets check if we can disconnect
+					if !r.TunnelExists {
+						// we can disconnect
+						disconnectNebulaUI()
+					}
 				}
 			} else {
 				if registering {
@@ -661,7 +683,10 @@ func checkConnectionStatus() {
 							UpdManagerSetCheck()
 							// we are signed in, connect to mesh if we have only one access
 							connectEnable(false)
-							connectNebulaUIDefault()
+							// if we have only one access, connect to it, but it is allowed only if aut-disconnect is not enabled
+							if !myconfig.AutoDisconnect {
+								connectNebulaUIDefault()
+							}
 						} else {
 							// there is registering error, check timeout
 							var curTime = time.Now().Add(-time.Second * maxSignInTimeSeconds)
@@ -751,6 +776,7 @@ func onReady() {
 			mFavourites[i].Hide()
 		}
 		mChecked := systray.AddMenuItemCheckbox("Autostart enabled", "Autostart enabled", autostartApp.IsEnabled())
+		mAutoDisconnect := systray.AddMenuItemCheckbox("Auto-disconnect enabled", "Auto-disconnect enabled", myconfig.AutoDisconnect)
 		systray.AddSeparator()
 		mAccess := systray.AddMenuItem("My Access Rights in Shieldoo network", "My Access Rights in Shieldoo network")
 		systray.AddSeparator()
@@ -912,6 +938,14 @@ func onReady() {
 				} else {
 					autostartApp.Enable()
 					mChecked.Check()
+				}
+			case <-mAutoDisconnect.ClickedCh:
+				myconfig.AutoDisconnect = !myconfig.AutoDisconnect
+				saveClientConf()
+				if myconfig.AutoDisconnect {
+					mAutoDisconnect.Check()
+				} else {
+					mAutoDisconnect.Uncheck()
 				}
 			}
 		}

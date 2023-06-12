@@ -65,6 +65,7 @@ func deskserviceProcessor(client net.Conn) {
 	resp.AccessId = myconfig.AccessId
 	resp.Uri = myconfig.Uri
 	resp.RestrictedNetwork = myconfig.RestrictedNetwork
+	resp.TunnelExists = ServicecheckExistingTunnels
 	// send response to client
 	errs := rpc.RpcSendMessage(client, &resp)
 	if err != nil {

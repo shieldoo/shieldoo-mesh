@@ -28,6 +28,7 @@ var servicecheckPingerNextRunTimeinterval int = SVCCHECKPINGINTERVAL
 var servicecheckPingerQuit chan bool
 var servicecheckTestRestrictedNetworkCounter int = 0
 var servicecheckTunnelArray = make(map[string]ServiceCheckTunnelMessageCounter)
+var ServicecheckExistingTunnels bool = false
 
 func ServiceCheckGetPingerSuccess() bool {
 	return servicecheckPingerSuccess
@@ -186,11 +187,27 @@ func servicecheckTestRestrictedNetwork() {
 	}
 }
 
+func servicecheckHandleWakeUp() {
+	log.Debug("servicecheckHandleWakeUp ..")
+	if !localconf.Loaded {
+		return
+	}
+	if svcProcess == nil {
+		return
+	}
+	// force exchange IP configuration with lighthouse
+	log.Info("servicecheck - wake-up from sleep - force exchange IP configuration with lighthouse")
+	svcProcess.nebula.RebindUDPServer()
+}
+
 func ServiceCheckPinger() {
 	servicecheckPingerQuit = make(chan bool)
 	log.Info("servicecheck - ping started")
 	servicecheckTestRestrictedNetworkCounter = 0
+	// cleanup active tunnels
+	servicecheckTunnelArray = make(map[string]ServiceCheckTunnelMessageCounter)
 	for {
+		currentTime := time.Now().UTC()
 		select {
 		case <-servicecheckPingerQuit:
 			log.Debug("servicecheck - quitting ping ..")
@@ -198,6 +215,12 @@ func ServiceCheckPinger() {
 			servicecheckPingerSuccess = false
 			return
 		case <-time.After(time.Duration(servicecheckPingerNextRunTimeinterval) * time.Millisecond):
+			// check if system was in sleep mode
+			if time.Now().UTC().Sub(currentTime).Milliseconds() >= int64(2*servicecheckPingerNextRunTimeinterval) {
+				servicecheckHandleWakeUp()
+			}
+			// check if tunnels are active
+			ServicecheckExistingTunnels = servicecheckTestActiveNebulaTunnels()
 			// ping loop
 			servicecheckPingerSuccess = NetutilsPing(lighthouseIP)
 			// check if we need to switch to restricted network or back
