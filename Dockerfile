@@ -29,5 +29,6 @@ RUN apk add --no-cache libc6-compat gcompat
 
 WORKDIR /app
 COPY start.sh ./
+RUN chmod 550 /app/start.sh
 
 ENTRYPOINT ["/app/start.sh"]
