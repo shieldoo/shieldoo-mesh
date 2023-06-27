@@ -288,9 +288,6 @@ Delete "$SMPROGRAMS\Shieldoo Mesh\Shieldoo Mesh.lnk"
 Delete "$SMPROGRAMS\Shieldoo Mesh\Shieldoo Mesh Website.lnk"
 RmDir "$SMPROGRAMS\Shieldoo Secure Network"
 
-MessageBox MB_OK $STR_URL_VAR
-MessageBox MB_OK $ParamAutodisconnect
-
 ; change settings for autostart
 ${If} $ParamAutostart == "yes"
     ExecWait '"$INSTDIR\shieldoo-mesh-app.exe" -autostart'
