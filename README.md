@@ -236,6 +236,11 @@ run installer in silent mode:
 shieldoo-mesh-setup.exe  /S /URL="https://mycompany.shieldoo.net"
 ```
 
+run installer in silent mode with autostart and auto-disconnect mode:
+```
+shieldoo-mesh-setup.exe  /S /URL="https://mycompany.shieldoo.net" /AUTOSTART=yes /AUTODISCONNECT=yes
+```
+
 #### Service installer
 
 build command: 

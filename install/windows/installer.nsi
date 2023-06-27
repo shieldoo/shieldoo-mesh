@@ -67,6 +67,8 @@ Var STR_CONTAINS_VAR_3
 Var STR_CONTAINS_VAR_4
 Var STR_RETURN_VAR
 Var ConfigExists
+Var ParamAutostart
+Var ParamAutodisconnect
  
 Function StrContains
   Exch $STR_NEEDLE
@@ -101,21 +103,37 @@ FunctionEnd
  
 !define StrContains '!insertmacro "_StrContainsConstructor"'
 
-Function .onInit
-  ${GetParameters} $R0
-  ClearErrors
-  ${GetOptions} $R0 /URL= $0
-  IfFileExists $PROFILE\.shieldoo\shieldoo-mesh.yaml 0 +2
-  StrCpy $ConfigExists 1
-FunctionEnd
-
-!insertmacro MUI_PAGE_WELCOME
-
 Var DialogUrl
 Var LabelUrl
 Var TextUrl
 Var STR_RT_VAR
 Var STR_URL_VAR
+
+Function .onInit
+  ${GetParameters} $R0
+  ClearErrors
+  ${GetOptions} $R0 /URL= $0
+  StrCpy $STR_URL_VAR $0
+
+  ClearErrors
+  ${GetParameters} $R0
+  ClearErrors
+  StrCpy $ParamAutostart "no"
+  ${GetOptions} $R0 /AUTOSTART= $0
+  StrCpy $ParamAutostart $0
+
+  ClearErrors
+  ${GetParameters} $R0
+  ClearErrors
+  StrCpy $ParamAutodisconnect "no"
+  ${GetOptions} $R0 /AUTODISCONNECT= $0
+  StrCpy $ParamAutodisconnect $0
+
+  IfFileExists $PROFILE\.shieldoo\shieldoo-mesh.yaml 0 +2
+  StrCpy $ConfigExists 1
+FunctionEnd
+
+!insertmacro MUI_PAGE_WELCOME
 
 Page custom nsDialogsPage nsDialogsPageLeave
 
@@ -269,6 +287,18 @@ Delete "$PROFILE\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup\S
 Delete "$SMPROGRAMS\Shieldoo Mesh\Shieldoo Mesh.lnk"
 Delete "$SMPROGRAMS\Shieldoo Mesh\Shieldoo Mesh Website.lnk"
 RmDir "$SMPROGRAMS\Shieldoo Secure Network"
+
+MessageBox MB_OK $STR_URL_VAR
+MessageBox MB_OK $ParamAutodisconnect
+
+; change settings for autostart
+${If} $ParamAutostart == "yes"
+    ExecWait '"$INSTDIR\shieldoo-mesh-app.exe" -autostart'
+${EndIf}
+; change settings for autodisconnect
+${If} $ParamAutodisconnect == "yes"
+    ExecWait '"$INSTDIR\shieldoo-mesh-app.exe" -autodisconnect'
+${EndIf}
 
 SectionEnd
 
