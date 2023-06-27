@@ -118,6 +118,10 @@ func servicecheckTestActiveNebulaTunnels() bool {
 	if !localconf.Loaded || svcProcess == nil {
 		return false
 	}
+	// check interface
+	if svcProcess.nebula == nil {
+		return false
+	}
 	// check if there is any open tunnel
 	list := svcProcess.nebula.ListHostmap(false)
 	for _, v := range list {
