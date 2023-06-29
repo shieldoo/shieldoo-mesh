@@ -51,19 +51,28 @@ InstallDir "$PROGRAMFILES64\Shieldoo Mesh"
 !insertmacro GetParameters
 !insertmacro GetOptions
 
+Var DisableHostsEdit
+Var DialogData
+Var LabelData
+Var TextData
+Var EnableRDP
+Var RDPCheckboxData
+Var DisableHostsEditCheckboxData
+
 Function .onInit
+  ${GetParameters} $R0
+  ClearErrors
+  ${GetOptions} $R0 /DISABLEHOSTSEDIT= $0
+  ${If} $0 == "yes"
+     StrCpy $DisableHostsEdit "1"
+  ${EndIf}
+
   ${GetParameters} $R0
   ClearErrors
   ${GetOptions} $R0 /DATA= $0
 FunctionEnd
 
 !insertmacro MUI_PAGE_WELCOME
-
-Var DialogData
-Var LabelData
-Var TextData
-Var EnableRDP
-Var RDPCheckboxData
 
 Page custom nsDialogsPage nsDialogsPageLeave
 
@@ -85,6 +94,9 @@ Function nsDialogsPage
     ${NSD_CreateCheckbox} 0 80u 100% 12u "Enable Remote Desktop Connection (RDP) on this computer."
     Pop $RDPCheckboxData
 
+    ${NSD_CreateCheckbox} 0 95u 100% 12u "Disable HOSTS file editing."
+    Pop $DisableHostsEditCheckboxData
+
 	nsDialogs::Show
 
 FunctionEnd
@@ -92,6 +104,7 @@ FunctionEnd
 Function nsDialogsPageLeave
     ${NSD_GetText} $TextData $0
     ${NSD_GetState} $RDPCheckboxData $EnableRDP
+    ${NSD_GetState} $DisableHostsEditCheckboxData $DisableHostsEdit
     ${If} $0 == ""
         MessageBox MB_OK "Please enter valid DATA for Shieldoo Secure Network"
         Abort
@@ -153,6 +166,14 @@ ExecWait '"$INSTDIR\shieldoo-mesh-srv.exe" -createconfig "$0"'
 IfErrors 0 noError
     ; Handle error here
 noError:
+
+; disable hosts file editing
+ClearErrors
+${If} "$DisableHostsEdit" == "1"
+    ExecWait '"$INSTDIR\shieldoo-mesh-srv.exe" -disablehostsedit true'
+${Else}
+    ExecWait '"$INSTDIR\shieldoo-mesh-srv.exe" -disablehostsedit false'
+${EndIf}
 
 ; register service
 ClearErrors

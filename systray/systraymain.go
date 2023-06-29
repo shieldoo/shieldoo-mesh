@@ -720,7 +720,7 @@ func checkConnectionStatus() {
 }
 
 func inputUri() {
-	got, ok := inputbox.InputBox("Shieldoo Secure Network - your company name", "Company name", myconfig.Uri)
+	got, ok := inputbox.InputBox("Shieldoo Secure Network - your Shieldoo URL", "Shieldoo URL", myconfig.Uri)
 	if ok && got != "" {
 		log.Debug("you entered:", got)
 		if !strings.HasSuffix(got, "/") {

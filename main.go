@@ -57,6 +57,7 @@ func main() {
 	flagLog := flag.Bool("log", false, "Log to file in ./config directory")
 	flagH := flag.Bool("h", false, "Print command line usage")
 	flagCreateConfig := flag.String("createconfig", "", "Create configuration file from base64 input string")
+	disableHostsEdit := flag.String("disablehostsedit", "", "Disable hosts file editing [true, false]")
 	printUsage := false
 
 	flag.Parse()
@@ -71,6 +72,17 @@ func main() {
 			os.Exit(1)
 		} else {
 			fmt.Printf("config created")
+			os.Exit(0)
+		}
+	}
+
+	if *disableHostsEdit != "" {
+		disableEdit := *disableHostsEdit == "true"
+		if err := UpdateConfigSetDisableHostsEdit(disableEdit); err != nil {
+			fmt.Printf("cannot set disable hosts edit: %v\n", err)
+			os.Exit(1)
+		} else {
+			fmt.Printf("disable hosts edit set to %v", disableEdit)
 			os.Exit(0)
 		}
 	}

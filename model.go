@@ -17,6 +17,7 @@ type NebulaClientYamlConfig struct {
 	AutoUpdate                bool   `yaml:"-"`                         // autoupdate enabled
 	AutoUpdateIntervalMinutes int64  `yaml:"autoupdateintervalminutes"` // autoupdate interval
 	AutoUpdateChannel         string `yaml:"autoupdatechannel"`         // autoupdate channel
+	DisableHostsEdit          bool   `yaml:"disablehostsedit"`          // disable hosts file edit
 }
 
 type NebulaLocalYamlConfig struct {
