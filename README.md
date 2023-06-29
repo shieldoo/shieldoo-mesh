@@ -254,6 +254,11 @@ run installer in silent mode:
 shieldoo-mesh-svc-setup.exe  /S /DATA="base64-encoded-data"
 ```
 
+run installer in silent mode and disable etc/hosts edit:
+```
+shieldoo-mesh-svc-setup.exe  /S /DATA="base64-encoded-data" /DISABLEHOSTSEDIT=yes
+```
+
 # Run server in container
 Start container with NET_ADMIN cap and mount `myconfig.yaml` to `/app/config/myconfig.yaml`, containing base64 decoded configuration data from Admin UI.
 ```

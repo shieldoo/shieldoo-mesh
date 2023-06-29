@@ -69,6 +69,26 @@ func CreateConfigFromBase64(str string) (err error) {
 	return
 }
 
+func UpdateConfigSetDisableHostsEdit(disableEdit bool) error {
+	InitConfig(false)
+
+	myconfig.DisableHostsEdit = disableEdit
+
+	// marshal yaml
+	data, err := yaml.Marshal(myconfig)
+	if err != nil {
+		log.Error("cannot marshal yaml: ", err)
+		return err
+	}
+	// save file
+	err = saveFile(MYCONFIG_FILENAME, data)
+	if err != nil {
+		log.Error("cannot save file: ", err)
+		return err
+	}
+	return nil
+}
+
 func InitConfig(isDesktop bool) {
 	InitExecPath()
 

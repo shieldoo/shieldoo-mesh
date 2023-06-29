@@ -418,7 +418,9 @@ func SvcConnectionStart(enableWinLog bool) {
 					svcDisconnectWstunnel()
 				}
 				//dns
-				loadDNS()
+				if !myconfig.DisableHostsEdit {
+					loadDNS()
+				}
 				// need restart or its first time
 				svcIsInitialized = configureServices(enableWinLog)
 			}

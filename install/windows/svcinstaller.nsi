@@ -5,7 +5,8 @@
 !define APP_NAME "Shieldoo Secure Network"
 !define COMP_NAME "shieldoo.io"
 !define WEB_SITE "https://shieldoo.io"
-!define VERSION "0.#APPVERSION#"
+!define VERSION "0.0.0.0"
+#!define VERSION "0.#APPVERSION#"
 !define COPYRIGHT "shieldoo © 2022-2023"
 !define DESCRIPTION "Shieldoo Secure Network"
 !define INSTALLER_NAME "../../out/asset/win10-amd64/shieldoo-mesh-svc-setup.exe"
@@ -51,19 +52,28 @@ InstallDir "$PROGRAMFILES64\Shieldoo Mesh"
 !insertmacro GetParameters
 !insertmacro GetOptions
 
+Var DisableHostsEdit
+Var DialogData
+Var LabelData
+Var TextData
+Var EnableRDP
+Var RDPCheckboxData
+Var DisableHostsEditCheckboxData
+
 Function .onInit
+  ${GetParameters} $R0
+  ClearErrors
+  ${GetOptions} $R0 /DISABLEHOSTSEDIT= $0
+  ${If} $0 == "yes"
+     StrCpy $DisableHostsEdit "1"
+  ${EndIf}
+
   ${GetParameters} $R0
   ClearErrors
   ${GetOptions} $R0 /DATA= $0
 FunctionEnd
 
 !insertmacro MUI_PAGE_WELCOME
-
-Var DialogData
-Var LabelData
-Var TextData
-Var EnableRDP
-Var RDPCheckboxData
 
 Page custom nsDialogsPage nsDialogsPageLeave
 
@@ -85,6 +95,9 @@ Function nsDialogsPage
     ${NSD_CreateCheckbox} 0 80u 100% 12u "Enable Remote Desktop Connection (RDP) on this computer."
     Pop $RDPCheckboxData
 
+    ${NSD_CreateCheckbox} 0 95u 100% 12u "Disable HOSTS file editing."
+    Pop $DisableHostsEditCheckboxData
+
 	nsDialogs::Show
 
 FunctionEnd
@@ -92,6 +105,7 @@ FunctionEnd
 Function nsDialogsPageLeave
     ${NSD_GetText} $TextData $0
     ${NSD_GetState} $RDPCheckboxData $EnableRDP
+    ${NSD_GetState} $DisableHostsEditCheckboxData $DisableHostsEdit
     ${If} $0 == ""
         MessageBox MB_OK "Please enter valid DATA for Shieldoo Secure Network"
         Abort
@@ -153,6 +167,14 @@ ExecWait '"$INSTDIR\shieldoo-mesh-srv.exe" -createconfig "$0"'
 IfErrors 0 noError
     ; Handle error here
 noError:
+
+; disable hosts file editing
+ClearErrors
+${If} "$DisableHostsEdit" == "1"
+    ExecWait '"$INSTDIR\shieldoo-mesh-srv.exe" -disablehostsedit true'
+${Else}
+    ExecWait '"$INSTDIR\shieldoo-mesh-srv.exe" -disablehostsedit false'
+${EndIf}
 
 ; register service
 ClearErrors
