@@ -52,6 +52,20 @@ type ManagementRequest struct {
 	OverWebSocket bool      `json:"over_websocket"`
 }
 
+type ManagementOSAutoupdateRequest struct {
+	Type                 string    `json:"type"`
+	Name                 string    `json:"name"`
+	Version              string    `json:"version"`
+	Description          string    `json:"description"`
+	LastUpdate           time.Time `json:"last_update"`
+	LastUpdateOutput     string    `json:"last_update_output"`
+	Success              bool      `json:"success"`
+	SecurityUpdatesCount int       `json:"security_updates_count"`
+	OtherUpdatesCount    int       `json:"other_updates_count"`
+	SecurityUpdates      []string  `json:"security_updates"`
+	OtherUpdates         []string  `json:"other_updates"`
+}
+
 type ManagementResponseConfigData struct {
 	Data      string `json:"config"`
 	Hash      string `json:"hash"`
@@ -59,18 +73,27 @@ type ManagementResponseConfigData struct {
 }
 
 type ManagementResponseConfig struct {
-	AccessID                  int                          `json:"accessid"`
-	UPN                       string                       `json:"upn"`
-	Name                      string                       `json:"name"`
-	ConfigData                ManagementResponseConfigData `json:"config"`
-	NebulaPunchBack           bool                         `json:"nebulapunchback"`
-	NebulaRestrictiveNetwork  bool                         `json:"nebularestrictivenetwork"`
-	Autoupdate                bool                         `json:"autoupdate"`
-	WebSocketUrl              string                       `json:"websocketurl"`
-	WebSocketIPs              []string                     `json:"websocketips"`
-	WebSocketUsernamePassword string                       `json:"websocketusernamepassword"`
-	ApplianceListeners        []ManagementResponseListener `json:"listeners"`
-	NebulaCIDR                string                       `json:"nebulacidr"`
+	AccessID                  int                                  `json:"accessid"`
+	UPN                       string                               `json:"upn"`
+	Name                      string                               `json:"name"`
+	ConfigData                ManagementResponseConfigData         `json:"config"`
+	NebulaPunchBack           bool                                 `json:"nebulapunchback"`
+	NebulaRestrictiveNetwork  bool                                 `json:"nebularestrictivenetwork"`
+	Autoupdate                bool                                 `json:"autoupdate"`
+	WebSocketUrl              string                               `json:"websocketurl"`
+	WebSocketIPs              []string                             `json:"websocketips"`
+	WebSocketUsernamePassword string                               `json:"websocketusernamepassword"`
+	ApplianceListeners        []ManagementResponseListener         `json:"listeners"`
+	NebulaCIDR                string                               `json:"nebulacidr"`
+	OSAutoupdatePolicy        ManagementResponseOSAutoupdatePolicy `json:"osautoupdatepolicy"`
+}
+
+type ManagementResponseOSAutoupdatePolicy struct {
+	Enabled                   bool `json:"enabled"`
+	SecurityAutoupdateEnabled bool `json:"securityautoupdateenabled"`
+	AllAutoupdateEnabled      bool `json:"allautoupdateenabled"`
+	RestartAfterUpdate        bool `json:"restartafterupdate"`
+	UpdateHour                int  `json:"updatehour"`
 }
 
 type ManagementResponseListener struct {
