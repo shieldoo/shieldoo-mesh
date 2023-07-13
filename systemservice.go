@@ -21,6 +21,7 @@ func (p *program) Start(s service.Service) error {
 		go SvcConnectionStart(true)
 		go ServiceCheckPinger()
 		go ServiceUpdaterStart()
+		go OSUpdateCheckStart()
 	}
 	return nil
 }
@@ -30,6 +31,7 @@ func (p *program) Stop(s service.Service) error {
 	if systemsvcIsDesktop {
 		DeskserviceStop()
 	} else {
+		OSUpdateCheckStop()
 		ServiceCheckPingerStop()
 		ServiceUpdaterStop()
 		SvcConnectionStop()
