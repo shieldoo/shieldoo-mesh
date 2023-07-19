@@ -26,7 +26,7 @@ const mtu = 9001
 
 type InterfaceConfig struct {
 	HostMap                 *HostMap
-	Outside                 udp.Conn
+	Outside                 *udp.Conn
 	Inside                  overlay.Device
 	certState               *CertState
 	Cipher                  string
@@ -52,7 +52,7 @@ type InterfaceConfig struct {
 
 type Interface struct {
 	hostMap            *HostMap
-	outside            udp.Conn
+	outside            *udp.Conn
 	inside             overlay.Device
 	certState          atomic.Pointer[CertState]
 	cipher             string
@@ -80,7 +80,7 @@ type Interface struct {
 
 	conntrackCacheTimeout time.Duration
 
-	writers []udp.Conn
+	writers []*udp.Conn
 	readers []io.ReadWriteCloser
 
 	metricHandshakes    metrics.Histogram
@@ -167,7 +167,7 @@ func NewInterface(ctx context.Context, c *InterfaceConfig) (*Interface, error) {
 		dropMulticast:      c.DropMulticast,
 		routines:           c.routines,
 		version:            c.version,
-		writers:            make([]udp.Conn, c.routines),
+		writers:            make([]*udp.Conn, c.routines),
 		readers:            make([]io.ReadWriteCloser, c.routines),
 		caPool:             c.caPool,
 		disconnectInvalid:  c.disconnectInvalid,
@@ -243,7 +243,7 @@ func (f *Interface) run() {
 func (f *Interface) listenOut(i int) {
 	runtime.LockOSThread()
 
-	var li udp.Conn
+	var li *udp.Conn
 	// TODO clean this up with a coherent interface for each outside connection
 	if i > 0 {
 		li = f.writers[i]
@@ -275,7 +275,7 @@ func (f *Interface) listenIn(reader io.ReadWriteCloser, i int) {
 
 			f.l.WithError(err).Error("Error while reading outbound packet")
 			// This only seems to happen when something fatal happens to the fd, so exit.
-			//os.Exit(2)
+			// os.Exit(2)
 			break
 		}
 
@@ -413,13 +413,6 @@ func (f *Interface) emitStats(ctx context.Context, i time.Duration) {
 
 func (f *Interface) Close() error {
 	f.closed.Store(true)
-
-	for _, u := range f.writers {
-		err := u.Close()
-		if err != nil {
-			f.l.WithError(err).Error("Error while closing udp socket")
-		}
-	}
 
 	// Release the tun device
 	return f.inside.Close()
