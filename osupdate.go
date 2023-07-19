@@ -19,7 +19,7 @@ func OSUpdateCheckStart() {
 			log.Debug("osupdater - quitting ..")
 			osUpdaterQuit = nil
 			return
-		case <-time.After(time.Duration(1) * time.Minute):
+		case <-time.After(time.Duration(10) * time.Minute):
 			log.Debug("osupdater - checking for updates ..")
 			osUpdateProcess()
 		}

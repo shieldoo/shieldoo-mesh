@@ -123,7 +123,7 @@ func servicecheckTestActiveNebulaTunnels() bool {
 		return false
 	}
 	// check if there is any open tunnel
-	list := svcProcess.nebula.ListHostmap(false)
+	list := svcProcess.nebula.ListHostmapHosts(false)
 	for _, v := range list {
 		vpnip := v.VpnIp.String()
 		if vpnip != lighthouseIP {

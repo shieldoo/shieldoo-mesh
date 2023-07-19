@@ -57,6 +57,17 @@ func runOsUpdateScript(script string, param string) (string, error, int) {
 	return outb.String(), err, retcode
 }
 
+func osRemoveEmptyLines(lines []string) []string {
+	var ret []string
+	for _, line := range lines {
+		line = strings.TrimSpace(line)
+		if line != "" {
+			ret = append(ret, line)
+		}
+	}
+	return ret
+}
+
 func osUpdateRun() ManagementOSAutoupdateRequest {
 	gi, _ := goInfo.GetInfo()
 	pretty, _ := getPrettyName()
@@ -102,14 +113,13 @@ func osUpdateRun() ManagementOSAutoupdateRequest {
 		return ret
 	}
 	// parse output of script (lines)
-	if strings.TrimSpace(outScripts) != "" {
-		ret.SecurityUpdates = strings.Split(outScripts, "\n")
-		ret.SecurityUpdatesCount = len(ret.SecurityUpdates)
-	}
-	if strings.TrimSpace(outOther) != "" {
-		ret.OtherUpdates = strings.Split(outOther, "\n")
-		ret.OtherUpdatesCount = len(ret.OtherUpdates)
-	}
+	ret.SecurityUpdates = strings.Split(outScripts, "\n")
+	ret.OtherUpdates = strings.Split(outOther, "\n")
+	// cleanup arrays (remove empty lines)
+	ret.SecurityUpdates = osRemoveEmptyLines(ret.SecurityUpdates)
+	ret.OtherUpdates = osRemoveEmptyLines(ret.OtherUpdates)
+	ret.SecurityUpdatesCount = len(ret.SecurityUpdates)
+	ret.OtherUpdatesCount = len(ret.OtherUpdates)
 
 	log.Debug("osupdate-lnx: script output security: ", outScripts)
 	log.Debug("osupdate-lnx: script output other: ", outOther)
