@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"runtime"
 
 	"gopkg.in/yaml.v3"
 )
@@ -97,6 +98,14 @@ func NebulaConfigCreate(configdata string, punchback bool, isrestrictednetwork b
 			break
 		}
 	}
+	// exception for darwin (get from GOOS), ignore Dev name
+	if runtime.GOOS == "darwin" {
+		c.Tun.Dev = ""
+	}
+	// sanitize HOST, PORT config
+	c.Listen.Host = "0.0.0.0"
+	c.Listen.Port = 0
+
 	buf, err = yaml.Marshal(&c)
 	if err != nil {
 		log.Debug("Error serialize nebula config: ", err)
