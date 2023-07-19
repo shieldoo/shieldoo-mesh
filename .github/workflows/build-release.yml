@@ -10,7 +10,7 @@ jobs:
 
   build-darwin:
     name: Build Darwin
-    runs-on: macos-11
+    runs-on: macos-latest
     steps:
     - name: Set up Go 1.20
       uses: actions/setup-go@v2
