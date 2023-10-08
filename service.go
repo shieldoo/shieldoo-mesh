@@ -92,6 +92,7 @@ type SvcNetworkCard struct {
 	nl                  *logrus.Logger
 	RestrictiveNetworks bool
 	PunchBack           bool
+	RoutesHash          string
 }
 
 func (r *SvcNetworkCard) Stop() {
@@ -160,7 +161,8 @@ func svcCleanupProcesses(cfg *NebulaLocalYamlConfig) {
 	if svcProcess != nil {
 		if svcProcess.AccessID != cfg.ConfigData.AccessID /* accessID changed */ ||
 			svcProcess.IPAddress != cfg.ConfigData.ConfigData.IPAddress /* IP address of tun/tap changed */ ||
-			svcProcess.RestrictiveNetworks != myconfig.RestrictedNetwork /* if restrictive network changed */ {
+			svcProcess.RestrictiveNetworks != myconfig.RestrictedNetwork /* if restrictive network changed */ ||
+			svcProcess.RoutesHash != ServiceCheckServiceDNSIPsHash() /* if routes changed */ {
 			// there is change in config which will recreate network adapter
 			svcStopProcess()
 			// cleanup changes to windows firewall
@@ -200,6 +202,7 @@ func svcNewProcess(c *ManagementResponseConfig, enableWinLog bool) (SvcNetworkCa
 		IPAddress:           c.ConfigData.IPAddress,
 		PunchBack:           c.NebulaPunchBack,
 		RestrictiveNetworks: myconfig.RestrictedNetwork,
+		RoutesHash:          ServiceCheckServiceDNSIPsHash(),
 	}
 
 	log.Debug("create service: ", c.ConfigData.IPAddress)
@@ -465,6 +468,9 @@ func SvcConnectionStop() {
 	if myconfig.WindowsFW {
 		svcFirewallCleanup()
 	}
+
+	// cleanup service IPs
+	ServicecheckServiceDNSIPsData = []string{}
 }
 
 func SvcCleanupDNS() {

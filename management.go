@@ -173,6 +173,13 @@ func telemetrySend() (ret bool) {
 			telemetryProcessChanges(resp.ConfigData)
 			ret = true
 		}
+		// resolve DNS
+		newIPs := ServiceCheckServiceDNSIPs()
+		if ServiceCheckServiceDNSIPsChanged(newIPs) {
+			log.Info("DNS IP change detected, new IPs: ", newIPs)
+			ServicecheckServiceDNSIPsData = newIPs
+			ret = true
+		}
 	}
 	return
 }

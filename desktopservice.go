@@ -37,6 +37,7 @@ func deskserviceProcessor(client net.Conn) {
 			myconfig.Uri = j.Uri
 			myconfig.Secret = j.Secret
 			myconfig.RPCClientID = j.ClientID
+			myconfig.LighthouseRoute = j.LighthouseRoute
 			if j.HeartbeatInterval >= 5 && j.HeartbeatInterval <= 300 {
 				myconfig.SendInterval = j.HeartbeatInterval
 			} else {

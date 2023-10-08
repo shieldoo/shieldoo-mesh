@@ -27,7 +27,7 @@ const (
 )
 
 const (
-	RPCVERSION string = "1.3"
+	RPCVERSION string = "1.4"
 )
 
 type RpcCommandStart struct {
@@ -37,6 +37,7 @@ type RpcCommandStart struct {
 	Secret            string `json:"secret"`
 	HeartbeatInterval int    `json:"heartbeatinterval"`
 	RestrictedNetwork bool   `json:"restrictednetwork"`
+	LighthouseRoute   bool   `json:"lighthouseroute"`
 	ClientID          string `json:"clientid"`
 }
 
@@ -56,6 +57,7 @@ type RpcCommandResponse struct {
 	IsRunning         bool   `json:"isrunning"`
 	Uri               string `json:"uri"`
 	RestrictedNetwork bool   `json:"restrictednetwork"`
+	LighthouseRoute   bool   `json:"lighthouseroute"`
 	TunnelExists      bool   `json:"tunnelexists"`
 }
 

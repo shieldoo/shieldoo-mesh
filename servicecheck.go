@@ -1,10 +1,12 @@
 package main
 
 import (
+	"crypto/sha256"
 	"encoding/base64"
 	"fmt"
 	"net"
 	"net/http"
+	"sort"
 	"strings"
 	"time"
 )
@@ -29,9 +31,86 @@ var servicecheckPingerQuit chan bool
 var servicecheckTestRestrictedNetworkCounter int = 0
 var servicecheckTunnelArray = make(map[string]ServiceCheckTunnelMessageCounter)
 var ServicecheckExistingTunnels bool = false
+var ServicecheckServiceDNSIPsData []string
 
 func ServiceCheckGetPingerSuccess() bool {
 	return servicecheckPingerSuccess
+}
+
+func servicecheckAddUniqueIP(ip []string, arr *[]string) {
+	for _, v := range ip {
+		found := false
+		for _, vv := range *arr {
+			if v == vv {
+				found = true
+				break
+			}
+		}
+		if !found {
+			*arr = append(*arr, v)
+		}
+	}
+}
+
+func ServiceCheckServiceDNSIPsHash() string {
+	if myconfig.LighthouseRoute {
+		return ""
+	}
+	// sort IPs and calculate sha256 hash
+	sort.Strings(ServicecheckServiceDNSIPsData)
+	return fmt.Sprintf("%x", sha256.Sum256([]byte(strings.Join(ServicecheckServiceDNSIPsData, ""))))
+}
+
+func ServiceCheckServiceDNSIPsChanged(newIPs []string) bool {
+	if len(ServicecheckServiceDNSIPsData) != len(newIPs) {
+		return true
+	}
+	sort.Strings(ServicecheckServiceDNSIPsData)
+	sort.Strings(newIPs)
+	for i, v := range ServicecheckServiceDNSIPsData {
+		if v != newIPs[i] {
+			return true
+		}
+	}
+	return false
+}
+
+func ServiceCheckServiceDNSIPs() (ips []string) {
+	// resolve DNS names for WSS and regular service
+	ips = []string{}
+	if localconf.Loaded {
+		if localconf.ConfigData.WebSocketUrl != "" {
+			// add lighthouse IP to array
+			lhIP, err := NebulaConfigGetLighthouseIP(localconf.ConfigData.ConfigData.Data)
+			if err != nil {
+				log.Error("servicecheck - cannot get lighthouse IP: ", err)
+			} else {
+				log.Debug("servicecheck - lighthouse IP: ", lhIP)
+				servicecheckAddUniqueIP([]string{lhIP}, &ips)
+			}
+			// parse hostname from wss url
+			hostname := strings.Split(localconf.ConfigData.WebSocketUrl, "/")[2]
+			// resolve hostname
+			resolvedIPs, err := NetutilsResolveDNS(hostname)
+			if err != nil {
+				log.Error("servicecheck - cannot resolve hostname: ", hostname)
+			} else {
+				log.Debug("servicecheck - resolved hostname: ", hostname, " to IPs: ", resolvedIPs)
+				servicecheckAddUniqueIP(resolvedIPs, &ips)
+			}
+			// parse hostname from shieldoo url
+			hostname = strings.Split(myconfig.Uri, "/")[2]
+			// resolve hostname
+			resolvedIPs, err = NetutilsResolveDNS(hostname)
+			if err != nil {
+				log.Error("servicecheck - cannot resolve hostname: ", hostname)
+			} else {
+				log.Debug("servicecheck - resolved hostname: ", hostname, " to IPs: ", resolvedIPs)
+				servicecheckAddUniqueIP(resolvedIPs, &ips)
+			}
+		}
+	}
+	return
 }
 
 func servicecheckSwitchToRestrictedNetwork() {

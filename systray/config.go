@@ -1,7 +1,6 @@
 package main
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -31,6 +30,7 @@ type NebulaClientUPNYamlConfig struct {
 	FavouriteItems                []NebulaClientFavouriteItem `yaml:"favouriteitems"`
 	AutoDisconnect                bool                        `yaml:"autodisconnect"`
 	AutoDisconnectIntervalMinutes int                         `yaml:"autodisconnectintervalminutes"`
+	LighthouseRoute               bool                        `yaml:"lighthouseroute"`
 }
 
 var myconfig *NebulaClientUPNYamlConfig
@@ -120,7 +120,7 @@ func saveClientConf() error {
 
 func readClientConf() (ret *NebulaClientUPNYamlConfig, err error) {
 	ret = &NebulaClientUPNYamlConfig{}
-	buf, e := ioutil.ReadFile(filepath.FromSlash(getConfigDir() + "/" + configFileName))
+	buf, e := os.ReadFile(filepath.FromSlash(getConfigDir() + "/" + configFileName))
 	if e != nil {
 		err = e
 		return

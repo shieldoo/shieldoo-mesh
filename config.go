@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/base64"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -127,7 +126,7 @@ func removeLocalConf() {
 
 func readClientConf(filename string) (*NebulaClientYamlConfig, error) {
 	c := &NebulaClientYamlConfig{}
-	buf, err := ioutil.ReadFile(execPathCreate(filename))
+	buf, err := os.ReadFile(execPathCreate(filename))
 	if err != nil {
 		return c, err
 	}
