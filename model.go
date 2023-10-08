@@ -12,6 +12,7 @@ type NebulaClientYamlConfig struct {
 	LocalUDPPort              int    `yaml:"localudpport"`
 	RunAsDeskServiceRPC       bool   `yaml:"-"`
 	RestrictedNetwork         bool   `yaml:"-"`
+	LighthouseRoute           bool   `yaml:"-"`
 	RPCClientID               string `yaml:"-"`
 	WindowsFW                 bool   `yaml:"-"`                         //windows firewall
 	AutoUpdate                bool   `yaml:"-"`                         // autoupdate enabled

@@ -192,6 +192,7 @@ var mFavouriteSelector *systray.MenuItem = nil
 var mConnectDefault *systray.MenuItem = nil
 var mSignIn *systray.MenuItem = nil
 var mEditUrl *systray.MenuItem = nil
+var mLighthouseRoute *systray.MenuItem = nil
 var mConnectSub []*systray.MenuItem = nil
 var mFavourites []*systray.MenuItem = nil
 var maxMenuItems int = 24
@@ -251,6 +252,9 @@ func connectNebulaUI(index int) {
 	if mEditUrl != nil {
 		systrayMenuItemDisable(mEditUrl)
 	}
+	if mLighthouseRoute != nil {
+		systrayMenuItemDisable(mLighthouseRoute)
+	}
 	if mFavouriteSelector != nil {
 		systrayMenuItemDisable(mFavouriteSelector)
 	}
@@ -268,6 +272,7 @@ func connectNebulaUI(index int) {
 		Uri:               myconfig.Uri,
 		Secret:            c.Secret,
 		RestrictedNetwork: myconfig.RestrictedNetwork,
+		LighthouseRoute:   myconfig.LighthouseRoute,
 		ClientID:          myconfig.ClientID,
 	}
 	rpcSendReceive(&r)
@@ -287,6 +292,9 @@ func disconnectNebulaUI() {
 	}
 	if mEditUrl != nil {
 		systrayMenuItemEnable(mEditUrl)
+	}
+	if mLighthouseRoute != nil {
+		systrayMenuItemEnable(mLighthouseRoute)
 	}
 	if mFavouriteSelector != nil {
 		systrayMenuItemEnable(mFavouriteSelector)
@@ -768,6 +776,7 @@ func onReady() {
 		mSignIn = systray.AddMenuItem(msgSignIn(), msgSignIn())
 		systray.AddSeparator()
 		mEditUrl = systray.AddMenuItem("Specify Shieldoo network", "Specify Shieldoo network")
+		mLighthouseRoute = systray.AddMenuItem("Full tunnel mode for communication", "Full tunnel mode for communication")
 		mFavouriteSelector = systray.AddMenuItem("Favourite Shieldoo networks", "Favourite Shieldoo networks")
 		mFavourites = []*systray.MenuItem{}
 		for i := 0; i < maxMenuItems; i++ {
@@ -909,6 +918,14 @@ func onReady() {
 				mSignIn.SetTooltip(msgSignIn())
 				if prevUri != myconfig.Uri {
 					connectDisable(false)
+				}
+			case <-mLighthouseRoute.ClickedCh:
+				myconfig.LighthouseRoute = !myconfig.LighthouseRoute
+				saveClientConf()
+				if myconfig.LighthouseRoute {
+					mLighthouseRoute.Check()
+				} else {
+					mLighthouseRoute.Uncheck()
 				}
 			case <-mSignIn.ClickedCh:
 				if myconfig.Uri == "" {

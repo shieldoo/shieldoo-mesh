@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"runtime"
+	"strings"
 
 	"gopkg.in/yaml.v3"
 )
@@ -71,10 +72,31 @@ type NebulaYamlConfig struct {
 	} `yaml:"firewall"`
 }
 
+func NebulaConfigGetLighthouseIP(configdata string) (lighthouse string, err error) {
+	c := &NebulaYamlConfig{}
+	buf := []byte(configdata)
+	err = yaml.Unmarshal(buf, c)
+	if err != nil {
+		log.Debug("Error deserialize nebula config: ", err)
+		return "", err
+	}
+	// read light house IP and port from hostmap
+	for _, k := range c.StaticHostMap {
+		// get first IP:port for lighthouse
+		if len(k) > 0 {
+			// parse IP from IP:port syntax
+			lighthouse = strings.Split(k[0], ":")[0]
+		}
+		break
+	}
+	return
+}
+
 func NebulaConfigCreate(configdata string, punchback bool, isrestrictednetwork bool) (string, string, error) {
 	c := &NebulaYamlConfig{}
 	var err error
 	lhIP := ""
+	lhInternalIP := ""
 	buf := []byte(configdata)
 	err = yaml.Unmarshal(buf, c)
 	if err != nil {
@@ -84,11 +106,12 @@ func NebulaConfigCreate(configdata string, punchback bool, isrestrictednetwork b
 	c.Punchy.Respond = punchback
 	c.Relay.UseRelays = true
 	// read light house IP and port from hostmap
-	for _, k := range c.StaticHostMap {
+	for kkey, k := range c.StaticHostMap {
 		// parse IP and port
 		if len(k) > 0 {
 			lhIP = k[0]
 		}
+		lhInternalIP = kkey
 		break
 	}
 	if isrestrictednetwork {
@@ -105,6 +128,19 @@ func NebulaConfigCreate(configdata string, punchback bool, isrestrictednetwork b
 	// sanitize HOST, PORT config
 	c.Listen.Host = "0.0.0.0"
 	c.Listen.Port = 0
+
+	// if there is enabled LighthouseRoute add there routes via lighthouse
+	if myconfig.LighthouseRoute {
+		if len(ServicecheckServiceDNSIPsData) > 0 {
+			// generate route list
+			log.Debug("ServicecheckServiceDNSIPsData: ", ServicecheckServiceDNSIPsData)
+			routeList := NetutilsGenerateRoutes(ServicecheckServiceDNSIPsData)
+			// add routes to lighthouse
+			for _, v := range routeList {
+				c.Tun.UnsafeRoutes = append(c.Tun.UnsafeRoutes, NebulaYamlConfigUnsafeRoutes{Route: v, Via: lhInternalIP})
+			}
+		}
+	}
 
 	buf, err = yaml.Marshal(&c)
 	if err != nil {
