@@ -87,6 +87,25 @@ const msgDisconnected = "shieldoo - disconnected"
 const msgLogo = "/logo.png"
 const msgConnectWithProfile = "Connect with Access Card"
 const msgWaitingForSignIn = "shieldoo - waiting for sign-in"
+const lighthouseMessageEmpty = "Full tunnel mode for communication"
+const lighthouseMessageParam = "Full tunnel mode (via %s)"
+
+func setMsgLighthouse(ip string) {
+	if mLighthouseRoute != nil {
+		// only if text changed
+		newMsg := ""
+		if ip == "" {
+			newMsg = lighthouseMessageEmpty
+		} else {
+			newMsg = fmt.Sprintf(lighthouseMessageParam, ip)
+		}
+		if newMsg != lighthouseMessage {
+			lighthouseMessage = newMsg
+			mLighthouseRoute.SetTitle(lighthouseMessage)
+			mLighthouseRoute.SetTooltip(lighthouseMessage)
+		}
+	}
+}
 
 func msgSignIn() string {
 	orgname := strings.Replace(myconfig.Uri, "https://", "", 1)
@@ -207,6 +226,7 @@ var serverMessage string = ""
 var systrayToolTip string = ""
 var systrayIcon []byte
 var serverMessageChan chan string = make(chan string)
+var lighthouseMessage string = ""
 
 func systrayMenuItemDisable(itm *systray.MenuItem) {
 	if !itm.Disabled() {
@@ -649,7 +669,9 @@ func checkConnectionStatus() {
 						disconnectNebulaUI()
 					}
 				}
+				setMsgLighthouse(r.Lighthouse)
 			} else {
+				setMsgLighthouse("")
 				if registering {
 					var tmpicn *[]byte
 					switch iconConnectingIndex {
@@ -722,6 +744,7 @@ func checkConnectionStatus() {
 		} else {
 			systraySetTemplateIcon(icon.IconError)
 			systraySetToolTip("shieldoo - ERROR - shieldoo-mesh service is not running")
+			setMsgLighthouse("")
 		}
 		time.Sleep(500 * time.Millisecond)
 	}
@@ -776,7 +799,7 @@ func onReady() {
 		mSignIn = systray.AddMenuItem(msgSignIn(), msgSignIn())
 		systray.AddSeparator()
 		mEditUrl = systray.AddMenuItem("Specify Shieldoo network", "Specify Shieldoo network")
-		mLighthouseRoute = systray.AddMenuItem("Full tunnel mode for communication", "Full tunnel mode for communication")
+		mLighthouseRoute = systray.AddMenuItem(lighthouseMessageEmpty, lighthouseMessageEmpty)
 		mFavouriteSelector = systray.AddMenuItem("Favourite Shieldoo networks", "Favourite Shieldoo networks")
 		mFavourites = []*systray.MenuItem{}
 		for i := 0; i < maxMenuItems; i++ {

@@ -27,7 +27,7 @@ const (
 )
 
 const (
-	RPCVERSION string = "1.4"
+	RPCVERSION string = "1.5"
 )
 
 type RpcCommandStart struct {
@@ -59,6 +59,7 @@ type RpcCommandResponse struct {
 	RestrictedNetwork bool   `json:"restrictednetwork"`
 	LighthouseRoute   bool   `json:"lighthouseroute"`
 	TunnelExists      bool   `json:"tunnelexists"`
+	Lighthouse        string `json:"lighthouse"`
 }
 
 // Parse message header, get message type and content length

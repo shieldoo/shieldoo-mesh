@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net"
 	"os"
+	"strings"
 
 	rpc "github.com/shieldoo/shieldoo-mesh/rpc"
 )
@@ -67,6 +68,8 @@ func deskserviceProcessor(client net.Conn) {
 	resp.Uri = myconfig.Uri
 	resp.RestrictedNetwork = myconfig.RestrictedNetwork
 	resp.TunnelExists = ServicecheckExistingTunnels
+	resp.LighthouseRoute = myconfig.LighthouseRoute
+	resp.Lighthouse = strings.Split(lighthousePublicIpPort, ":")[0]
 	// send response to client
 	errs := rpc.RpcSendMessage(client, &resp)
 	if err != nil {
