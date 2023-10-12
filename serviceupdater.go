@@ -125,11 +125,21 @@ func serviceupdaterInstallLinux(fpath string) error {
 	}
 	// stop service, unpack and reinstall
 	log.Info("serviceupdaterInstallLinux - running installer ..")
-	cmd := exec.Command("/usr/bin/sh", scriptname1)
+	// find location of sh
+	shPath := "/bin/sh"
+	shPaths := []string{"/usr/bin/sh", "/bin/sh", "/usr/local/bin/sh", "/usr/local/bin/bash", "/bin/bash", "/usr/bin/bash"}
+	for _, p := range shPaths {
+		// check if sh exists
+		if _, err := os.Stat(p); err == nil {
+			shPath = p
+			break
+		}
+	}
+	// try to install
+	cmd := exec.Command(shPath, scriptname1)
 	err = cmd.Run()
 	if err != nil {
 		log.Error("serviceupdaterInstallLinux - cannot run installer: ", err)
-		return err
 	}
 	return nil
 }
