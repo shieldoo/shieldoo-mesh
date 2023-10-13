@@ -799,7 +799,7 @@ func onReady() {
 		mSignIn = systray.AddMenuItem(msgSignIn(), msgSignIn())
 		systray.AddSeparator()
 		mEditUrl = systray.AddMenuItem("Specify Shieldoo network", "Specify Shieldoo network")
-		mLighthouseRoute = systray.AddMenuItem(lighthouseMessageEmpty, lighthouseMessageEmpty)
+		mLighthouseRoute = systray.AddMenuItemCheckbox(lighthouseMessageEmpty, lighthouseMessageEmpty, myconfig.LighthouseRoute)
 		mFavouriteSelector = systray.AddMenuItem("Favourite Shieldoo networks", "Favourite Shieldoo networks")
 		mFavourites = []*systray.MenuItem{}
 		for i := 0; i < maxMenuItems; i++ {
