@@ -115,13 +115,30 @@ func NetutilsGenerateRoutes(ipExceptions []string) []string {
 	var ret []string
 	arr := []NetutilsCidrRange{
 		{FromIP: netutilsCidrFromStr("0.0.0.0"), ToIP: netutilsCidrFromStr("9.255.255.255")},
-		{FromIP: netutilsCidrFromStr("192.169.0.0"), ToIP: netutilsCidrFromStr("255.255.255.255")},
-		{FromIP: netutilsCidrFromStr("172.32.0.0"), ToIP: netutilsCidrFromStr("192.167.255.255")},
 		{FromIP: netutilsCidrFromStr("11.0.0.0"), ToIP: netutilsCidrFromStr("172.15.255.255")},
+		{FromIP: netutilsCidrFromStr("172.32.0.0"), ToIP: netutilsCidrFromStr("192.167.255.255")},
+		{FromIP: netutilsCidrFromStr("192.169.0.0"), ToIP: netutilsCidrFromStr("255.255.255.255")},
+		{FromIP: netutilsCidrFromStr("255.255.255.255"), ToIP: netutilsCidrFromStr("255.255.255.255")},
 	}
 
 	for _, i := range ipExceptions {
 		arr = netutilsCidrAddIPToRange(i, arr)
+	}
+
+	// clean out 255.255.255.255 - 255.255.255.255 range from arr
+	for idx, i := range arr {
+		if i.FromIP.String() == "255.255.255.255" && i.ToIP.String() == "255.255.255.255" {
+			if len(arr) == 1 {
+				arr = []NetutilsCidrRange{}
+			} else if idx == 0 {
+				arr = arr[1:]
+			} else if idx == len(arr)-1 {
+				arr = arr[:idx]
+			} else {
+				arr = append(arr[:idx], arr[idx+1:]...)
+			}
+			break
+		}
 	}
 
 	for _, a := range arr {
@@ -129,6 +146,11 @@ func NetutilsGenerateRoutes(ipExceptions []string) []string {
 			ret = append(ret, r.String())
 		}
 	}
+	// sort before return
+	sort.Slice(ret, func(i, j int) bool {
+		// strings are CIDR notation, convert to uint before compare and forgot about mask
+		return netutilsCidrCompare(netutilsCidrFromStr(strings.Split(ret[i], "/")[0]), netutilsCidrFromStr(strings.Split(ret[j], "/")[0])) < 0
+	})
 	return ret
 }
 

@@ -13,6 +13,8 @@ import (
 // global log data which are send to server during telemtry collection
 var logdata chan string
 
+var globalDebugFlag bool = false
+
 // IP of lighthouse
 var lighthouseIP string = ""
 var lighthousePublicIpPort string = ""
@@ -126,9 +128,11 @@ func main() {
 
 	if *debugFlag {
 		log.SetLevel(logrus.DebugLevel)
+		globalDebugFlag = true
 	}
 	if myconfig.Debug {
 		log.SetLevel(logrus.DebugLevel)
+		globalDebugFlag = true
 	}
 	myconfig.WindowsFW = !(*noFwFlag)
 

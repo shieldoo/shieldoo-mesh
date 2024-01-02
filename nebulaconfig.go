@@ -147,5 +147,6 @@ func NebulaConfigCreate(configdata string, punchback bool, isrestrictednetwork b
 		log.Debug("Error serialize nebula config: ", err)
 		return "", lhIP, err
 	}
+
 	return string(buf), lhIP, err
 }
