@@ -43,9 +43,9 @@ jobs:
         lipo -create -output out/shieldoo-mesh-app out/shieldoo-mesh-app-amd64 out/shieldoo-mesh-app-arm64
         rm out/shieldoo-mesh-app-amd64 out/shieldoo-mesh-app-arm64
         env GOOS=darwin GOARCH=arm64 go build -ldflags "-X main.APPVERSION=$MYTAG -X main.ARCHITECTURE=x64" -o out/shieldoo-mesh-srv-arm64
-        # FIX for nebula 1.7.2 os.Exit in code
-        chmod +w /Users/runner/go/pkg/mod/github.com/slackhq/nebula@v1.7.2/interface.go
-        cat ./install/patch/interface.go > /Users/runner/go/pkg/mod/github.com/slackhq/nebula@v1.7.2/interface.go
+        # FIX for nebula 1.8.2 os.Exit in code
+        chmod +w /Users/runner/go/pkg/mod/github.com/slackhq/nebula@v1.8.2/interface.go
+        cat ./install/patch/interface.go > /Users/runner/go/pkg/mod/github.com/slackhq/nebula@v1.8.2/interface.go
         env GOOS=darwin GOARCH=arm64 go build -ldflags "-X main.APPVERSION=$MYTAG -X main.ARCHITECTURE=x64" -o out/shieldoo-mesh-srv-arm64
         env GOOS=darwin GOARCH=amd64 go build -ldflags "-X main.APPVERSION=$MYTAG -X main.ARCHITECTURE=x64" -o out/shieldoo-mesh-srv-amd64
         lipo -create -output out/shieldoo-mesh-srv out/shieldoo-mesh-srv-amd64 out/shieldoo-mesh-srv-arm64
@@ -154,9 +154,9 @@ jobs:
     - name: Build clientsrv
       run: |
         env GOOS=linux GOARCH=amd64 go build -ldflags "-X main.APPVERSION=$MYTAG -X main.ARCHITECTURE=amd64" -o ./out/asset/linux-amd64/shieldoo-mesh-srv 
-        # FIX for nebula 1.7.2 os.Exit in code
-        chmod +w /home/runner/go/pkg/mod/github.com/slackhq/nebula@v1.7.2/interface.go
-        cat ./install/patch/interface.go > /home/runner/go/pkg/mod/github.com/slackhq/nebula@v1.7.2/interface.go
+        # FIX for nebula 1.8.2 os.Exit in code
+        chmod +w /home/runner/go/pkg/mod/github.com/slackhq/nebula@v1.8.2/interface.go
+        cat ./install/patch/interface.go > /home/runner/go/pkg/mod/github.com/slackhq/nebula@v1.8.2/interface.go
         env GOOS=linux GOARCH=amd64 go build -ldflags "-X main.APPVERSION=$MYTAG -X main.ARCHITECTURE=amd64" -o ./out/asset/linux-amd64/shieldoo-mesh-srv 
         env GOOS=linux GOARCH=arm GOARM=7 go build -ldflags "-X main.APPVERSION=$MYTAG -X main.ARCHITECTURE=arm7" -o ./out/asset/linux-arm7/shieldoo-mesh-srv 
         cp ./install/linux/linux-amd64-install-svc.sh ./out/asset/linux-amd64/
@@ -243,10 +243,10 @@ jobs:
         env GOOS=windows GOARCH=amd64 CGO_ENABLED=1 CC=x86_64-w64-mingw32-gcc go build -ldflags "-H=windowsgui -X main.APPVERSION=$MYTAG -X main.ARCHITECTURE=amd64" -o ./out/asset/win10-amd64/shieldoo-mesh-app.exe ./systray
     - name: Build clientsrv
       run: |
-        # FIX for nebula 1.7.2 route add issue
+        # FIX for nebula 1.8.2 route add issue
         env GOOS=windows GOARCH=amd64 go build -ldflags "-X main.APPVERSION=$MYTAG -X main.ARCHITECTURE=amd64" -o ./out/asset/win10-amd64/shieldoo-mesh-srv.exe 
-        chmod +w /home/runner/go/pkg/mod/github.com/slackhq/nebula@v1.7.2/interface.go
-        cat ./install/patch/interface.go > /home/runner/go/pkg/mod/github.com/slackhq/nebula@v1.7.2/interface.go
+        chmod +w /home/runner/go/pkg/mod/github.com/slackhq/nebula@v1.8.2/interface.go
+        cat ./install/patch/interface.go > /home/runner/go/pkg/mod/github.com/slackhq/nebula@v1.8.2/interface.go
         env GOOS=windows GOARCH=amd64 go build -ldflags "-X main.APPVERSION=$MYTAG -X main.ARCHITECTURE=amd64" -o ./out/asset/win10-amd64/shieldoo-mesh-srv.exe 
 
     - name: Sign win binaries
